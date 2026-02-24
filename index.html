@@ -1,276 +1,402 @@
 <!doctype html>
 <html lang="tr">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Servet Takip</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Servet Takip</title>
 
-<style>
-body{
-  margin:0;
-  font-family: system-ui, sans-serif;
-  background: linear-gradient(180deg,#14161C,#101217);
-  color:#cfcfcf;
-}
+  <!-- Baloo (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
 
-/* ===== MASTER CONTAINER ===== */
-.container{
-  max-width:1440px;
-  margin:0 auto;
-  padding:40px 80px;
-}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-/* ===== HEADER ===== */
-.header{
-  display:grid;
-  grid-template-columns: 220px 1fr 220px;
-  align-items:center;
-  margin-bottom:40px;
-}
+  <style>
+    :root{
+      /* Canva'ya daha yakın sıcak koyu arka plan */
+      --bgTop:#16181f;
+      --bgBot:#101217;
 
-.leftBlock, .rightBlock{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-}
+      --text:#cfcfcf;
+      --muted:#bdbdbd;
 
-.hamburger{
-  width:60px;
-}
-.hamburger div{
-  height:4px;
-  background:#cfcfcf;
-  margin:10px 0;
-  border-radius:4px;
-}
+      --frame:rgba(255,255,255,.55);
 
-.centerBrand{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:18px;
-}
+      --purple:#b79cff;
+      --cyan:#8ed0ff;
+      --gold:#f0d27c;
+    }
 
-.logoBox{
-  width:80px;
-  height:80px;
-  background:#FFD400;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border-radius:8px;
-}
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:"Baloo 2", system-ui, sans-serif;
+      background:
+        radial-gradient(1100px 560px at 50% 0%, rgba(255,255,255,.06), transparent 60%),
+        linear-gradient(180deg,var(--bgTop),var(--bgBot));
+      color:var(--text);
+    }
 
-.logoMark{
-  position:relative;
-  font-weight:900;
-  font-size:56px;
-  color:black;
-}
+    /* ===== Full-screen layout (boşlukları bitirir) ===== */
+    .screen{
+      min-height:100vh;
+      display:grid;
+      grid-template-rows: auto 1fr auto auto;
+      align-items:start;
+    }
 
-.logoMark span{
-  position:absolute;
-  font-size:18px;
-  right:-8px;
-  top:8px;
-  transform:rotate(-18deg);
-}
+    .container{
+      width:min(1440px, 100vw);
+      margin:0 auto;
+      padding: clamp(18px, 3.8vw, 56px);
+    }
 
-.brandText{
-  font-size:36px;
-  font-weight:800;
-}
+    /* ===== Header ===== */
+    .header{
+      display:grid;
+      grid-template-columns: 260px 1fr 260px;
+      align-items:center;
+      padding-top: 6px;
+    }
 
-/* ===== CHART CARD ===== */
-.chartCard{
-  border:3px solid rgba(255,255,255,.6);
-  padding:30px;
-  position:relative;
-  height:360px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
+    .left, .right{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:12px;
+      color:var(--muted);
+      font-weight:800;
+      font-size: clamp(18px, 1.6vw, 26px);
+      opacity:.95;
+    }
 
-.chartRight{
-  position:absolute;
-  right:30px;
-  top:30px;
-  bottom:30px;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  font-weight:700;
-}
+    .hamburger{
+      width:74px; height:58px;
+      display:flex; flex-direction:column; justify-content:center; gap:10px;
+      opacity:.85;
+    }
+    .hamburger span{
+      height:4px; border-radius:4px; background:#cfcfcf;
+      width:72px;
+    }
+    .hamburger span:nth-child(2){ width:58px; }
 
-.chartArea{
-  width:420px;
-  height:420px;
-  position:relative;
-}
+    .center{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:18px;
+    }
 
-.label{
-  position:absolute;
-  font-weight:800;
-  font-size:28px;
-}
+    /* Logo: en doğrusu tek parça asset */
+    .logoWrap{
+      width:84px; height:84px;
+      border-radius:10px;
+      background:#ffd400;
+      display:grid; place-items:center;
+      box-shadow: 0 12px 28px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .logoWrap img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    /* Logo yoksa placeholder S */
+    .logoFallback{
+      font-weight:900;
+      font-size:58px;
+      color:#0b0b0b;
+      line-height:1;
+      position:relative;
+    }
+    .logoFallback::after{
+      content:"₺";
+      position:absolute;
+      right:-10px; top:10px;
+      font-size:18px;
+      transform:rotate(-18deg);
+      font-weight:900;
+    }
 
-.borsa{ left:-140px; top:90px; }
-.altin{ left:-130px; bottom:80px; }
-.gayrimenkul{ right:-160px; top:160px; }
+    .brand{
+      font-size: clamp(30px, 2.8vw, 44px);
+      font-weight:900;
+      letter-spacing:.2px;
+      color:#bfbfbf;
+      text-shadow: 0 10px 22px rgba(0,0,0,.35);
+    }
 
-/* ===== TOTALS ===== */
-.total{
-  text-align:center;
-  margin-top:40px;
-  font-size:44px;
-  font-weight:900;
-}
+    .userIcon{
+      width:64px; height:64px;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+      opacity:.9;
+    }
 
-.split{
-  display:flex;
-  justify-content:center;
-  gap:80px;
-  margin-top:30px;
-  font-size:32px;
-  font-weight:800;
-}
+    /* ===== Main card ===== */
+    .main{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding-top: clamp(10px, 2.2vw, 22px);
+    }
 
-/* ===== ADD BUTTON ===== */
-.addSection{
-  text-align:center;
-  margin-top:40px;
-}
+    .chartCard{
+      width: min(1120px, 100%);
+      height: clamp(320px, 40vh, 380px);
+      border: 3px solid var(--frame);
+      box-shadow: 0 18px 44px rgba(0,0,0,.55);
+      background: rgba(0,0,0,.08);
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 22px;
+    }
 
-.addBtn{
-  width:160px;
-  height:160px;
-  border-radius:50%;
-  background: radial-gradient(circle,#eee,#bbb);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin:0 auto;
-  box-shadow:0 15px 40px rgba(0,0,0,.4);
-}
+    .sideTools{
+      position:absolute;
+      right: 22px;
+      top: 22px;
+      bottom: 22px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:16px;
+      color:var(--muted);
+      font-weight:800;
+      font-size: clamp(14px, 1.3vw, 18px);
+      text-align:right;
+    }
 
-.plus{
-  width:90px;
-  height:90px;
-  position:relative;
-}
+    .tool{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:12px;
+    }
+    .tool svg{
+      width:46px; height:46px;
+      opacity:.9;
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,.45));
+    }
 
-.plus:before,
-.plus:after{
-  content:"";
-  position:absolute;
-  background:#e7e2d8;
-  border-radius:8px;
-}
+    .pieWrap{
+      width: 560px;
+      height: 300px;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
-.plus:before{
-  width:100%;
-  height:16px;
-  top:50%;
-  transform:translateY(-50%);
-}
+    .lbl{
+      position:absolute;
+      font-weight:900;
+      font-size: clamp(24px, 2.1vw, 34px);
+      color:#bfbfbf;
+      text-shadow: 0 12px 22px rgba(0,0,0,.35);
+    }
+    /* Canva'ya yakın konumlar */
+    .lbl.borsa{ left: 40px; top: 66px; }
+    .lbl.altin{ left: 62px; top: 200px; }
+    .lbl.gayrimenkul{ right: -10px; top: 126px; }
 
-.plus:after{
-  height:100%;
-  width:16px;
-  left:50%;
-  transform:translateX(-50%);
-}
-</style>
+    /* ===== Totals ===== */
+    .totals{
+      text-align:center;
+      padding: clamp(14px, 2.4vw, 24px) 0 0;
+      color:#c7c7c7;
+      text-shadow: 0 16px 30px rgba(0,0,0,.35);
+    }
+    .totals .big{
+      font-size: clamp(34px, 3.3vw, 52px);
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .totals .row{
+      margin-top: clamp(14px, 2.2vw, 24px);
+      display:flex;
+      justify-content:center;
+      gap: clamp(28px, 6vw, 90px);
+      flex-wrap:wrap;
+      font-size: clamp(22px, 2.4vw, 40px);
+      font-weight:900;
+    }
+
+    /* ===== Add button ===== */
+    .add{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:14px;
+      padding: clamp(10px, 2.5vw, 24px) 0 clamp(18px, 3vw, 30px);
+    }
+
+    .addBtn{
+      width: 170px;
+      height: 170px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+
+      /* derinlik */
+      background: radial-gradient(circle at 30% 30%, #f2f2f2, #cfcfcf 55%, #aaaaaa);
+      box-shadow:
+        inset 0 12px 20px rgba(255,255,255,.35),
+        inset 0 -12px 20px rgba(0,0,0,.22),
+        0 20px 40px rgba(0,0,0,.55);
+      display:grid;
+      place-items:center;
+    }
+
+    .plus{
+      width: 96px;
+      height: 96px;
+      position:relative;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
+    }
+    .plus::before,.plus::after{
+      content:"";
+      position:absolute;
+      left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      background:#e7e2d8;
+      border-radius:10px;
+      box-shadow:
+        inset 0 6px 10px rgba(255,255,255,.35),
+        inset 0 -6px 10px rgba(0,0,0,.14);
+    }
+    .plus::before{ width:110px; height:18px; }
+    .plus::after{ width:18px; height:110px; }
+
+    .addLabel{
+      font-size: clamp(22px, 2.1vw, 34px);
+      font-weight:900;
+      color:#bfbfbf;
+      text-shadow: 0 16px 30px rgba(0,0,0,.35);
+    }
+
+    /* Mobile fallback */
+    @media (max-width: 980px){
+      .header{ grid-template-columns: 1fr 1fr; row-gap:16px; }
+      .left{ grid-column:1/2; }
+      .right{ grid-column:2/3; }
+      .center{ grid-column:1/3; order:-1; }
+      .lbl.gayrimenkul{ right: 0; }
+    }
+  </style>
 </head>
 
 <body>
+  <div class="screen">
+    <div class="container">
+      <div class="header">
+        <div class="left">
+          <div class="hamburger" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <div>Menü</div>
+        </div>
 
-<div class="container">
+        <div class="center">
+          <div class="logoWrap" title="Servet Takip">
+            <!-- LOGO DOSYASI VARSA: assets/logo.png yükle, otomatik gelir -->
+            <img src="assets/logo.png" alt="" onerror="this.remove();document.getElementById('logoFallback').style.display='block';">
+            <div id="logoFallback" class="logoFallback" style="display:none;">S</div>
+          </div>
+          <div class="brand">Servet Takip</div>
+        </div>
 
-  <!-- HEADER -->
-  <div class="header">
-
-    <div class="leftBlock">
-      <div class="hamburger">
-        <div></div><div></div><div></div>
-      </div>
-      <div>Menü</div>
-    </div>
-
-    <div class="centerBrand">
-      <div class="logoBox">
-        <div class="logoMark">
-          S<span>₺</span>
+        <div class="right">
+          <svg class="userIcon" viewBox="0 0 24 24" fill="#cfcfcf" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 12c2.76 0 5-2.46 5-5.5S14.76 1 12 1 7 3.46 7 6.5 9.24 12 12 12Zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5Z"/>
+          </svg>
+          <div>Hesabım</div>
         </div>
       </div>
-      <div class="brandText">Servet Takip</div>
-    </div>
 
-    <div class="rightBlock">
-      <svg width="60" height="60" fill="#cfcfcf" viewBox="0 0 24 24">
-        <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5Zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5Z"/>
-      </svg>
-      <div>Hesabım</div>
-    </div>
+      <div class="main">
+        <div class="chartCard">
+          <div class="sideTools">
+            <div class="tool">
+              <div>Grafik<br>Değiştir</div>
+              <svg viewBox="0 0 24 24" fill="#cfcfcf" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 19h16v2H2V3h2v16Zm3-2V9h3v8H7Zm5 0V5h3v12h-3Zm5 0v-6h3v6h-3Z"/>
+              </svg>
+            </div>
+            <div class="tool">
+              <div>Grafik<br>Ayarları</div>
+              <svg viewBox="0 0 24 24" fill="#cfcfcf" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.6 7.6 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 7.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.23.39.32.6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96c.22.1.47.01.6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/>
+              </svg>
+            </div>
+          </div>
 
+          <div class="pieWrap">
+            <div class="lbl borsa">Borsa</div>
+            <div class="lbl altin">Altın</div>
+            <div class="lbl gayrimenkul">Gayrimenkul</div>
+            <canvas id="pie" width="440" height="280"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="totals">
+        <div class="big">Servetim: 2.955.245,87₺</div>
+        <div class="row">
+          <div>Aktif Servetim: 2.000.000₺</div>
+          <div>Pasif Servetim: 955.245,87₺</div>
+        </div>
+      </div>
+
+      <div class="add">
+        <button class="addBtn" onclick="alert('Varlık Ekle: sonraki adımda modal bağlayacağız')">
+          <div class="plus"></div>
+        </button>
+        <div class="addLabel">Varlık Ekle</div>
+      </div>
+    </div>
   </div>
 
-  <!-- CHART -->
-  <div class="chartCard">
-    <div class="chartArea">
-      <div class="label borsa">Borsa</div>
-      <div class="label altin">Altın</div>
-      <div class="label gayrimenkul">Gayrimenkul</div>
-      <canvas id="pie"></canvas>
-    </div>
+  <script>
+    // 3D hissi için shadow plugin
+    const shadowPlugin = {
+      id:'shadow',
+      beforeDatasetsDraw(chart){
+        const {ctx} = chart;
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,.55)';
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetX = 10;
+        ctx.shadowOffsetY = 14;
+      },
+      afterDatasetsDraw(chart){ chart.ctx.restore(); }
+    };
 
-    <div class="chartRight">
-      <div>Grafik<br>Değiştir</div>
-      <div>Grafik<br>Ayarları</div>
-    </div>
-  </div>
-
-  <!-- TOTAL -->
-  <div class="total">
-    Servetim: 2.955.245,87₺
-  </div>
-
-  <div class="split">
-    <div>Aktif Servetim: 2.000.000₺</div>
-    <div>Pasif Servetim: 955.245,87₺</div>
-  </div>
-
-  <!-- ADD -->
-  <div class="addSection">
-    <div class="addBtn">
-      <div class="plus"></div>
-    </div>
-    <div style="margin-top:15px;font-size:28px;font-weight:800;">Varlık Ekle</div>
-  </div>
-
-</div>
-
-<script>
-new Chart(document.getElementById("pie"),{
-  type:"doughnut",
-  data:{
-    labels:["Borsa","Altın","Gayrimenkul"],
-    datasets:[{
-      data:[35,25,40],
-      backgroundColor:["#b79cff","#f0d27c","#8ed0ff"],
-      borderWidth:6,
-      borderColor:"#14161C"
-    }]
-  },
-  options:{
-    cutout:"35%",
-    plugins:{legend:{display:false}}
-  }
-});
-</script>
-
+    new Chart(document.getElementById("pie").getContext("2d"),{
+      type:"doughnut",
+      data:{
+        labels:["Borsa","Altın","Gayrimenkul"],
+        datasets:[{
+          data:[35,25,40],
+          backgroundColor:["#b79cff","#f0d27c","#8ed0ff"],
+          borderColor:"rgba(0,0,0,.45)",
+          borderWidth:2,
+          spacing:10,
+          borderRadius:12,
+          hoverOffset:8
+        }]
+      },
+      options:{
+        responsive:false,
+        cutout:"36%",
+        plugins:{legend:{display:false}}
+      },
+      plugins:[shadowPlugin]
+    });
+  </script>
 </body>
 </html>
