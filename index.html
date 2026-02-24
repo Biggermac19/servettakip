@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ServetTakip</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body{font-family:Arial;background:#0f172a;color:#fff;padding:20px}
+    .card{background:#1e293b;padding:15px;border-radius:10px;margin-bottom:15px}
+    input,select{width:100%;padding:8px;margin:6px 0;border-radius:8px;border:1px solid #334155;background:#0b1220;color:#fff}
+    button{padding:10px 12px;margin-top:8px;background:#22c55e;border:none;border-radius:8px;cursor:pointer;width:100%}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:8px;text-align:center}
+    th{background:#334155}
+    .profit{color:#22c55e}.loss{color:#ef4444}
+    .rowbtns button{width:auto;margin:0 4px;padding:6px 10px}
+    .danger{background:#ef4444}
+  </style>
+</head>
+<body>
+  <h2>ServetTakip (MVP)</h2>
+
+  <div class="card">
+    <h3>Varlık Ekle / Düzenle (manuel fiyat)</h3>
+    <input type="hidden" id="editIndex">
+    <input id="name" placeholder="Varlık adı (örn: THYAO, BTC, Gram Altın)">
+    <select id="category">
+      <option>BIST</option><option>Kripto</option><option>Altın / Gümüş</option>
+      <option>Gayrimenkul</option><option>Araç</option><option>Nakit</option><option>Diğer</option>
+    </select>
+    <input id="buy" type="number" placeholder="Alış fiyatı">
+    <input id="current" type="number" placeholder="Güncel fiyat">
+    <input id="amount" type="number" placeholder="Adet / miktar">
+    <button onclick="saveAsset()">Kaydet</button>
+  </div>
+
+  <div class="card">
+    <h3>Portföy</h3>
+    <table id="portfolioTable"></table>
+    <h3 id="totalValue">Toplam Portföy: 0 ₺</h3>
+    <button onclick="saveSnapshot()">Snapshot Kaydet (grafik için)</button>
+  </div>
+
+  <div class="card">
+    <h3>Rapor</h3>
+    <select id="reportType" onchange="generateReport()">
+      <option value="day">Günlük</option>
+      <option value="week">Haftalık</option>
+      <option value="month" selected>Aylık</option>
+      <option value="year">Yıllık</option>
+    </select>
+    <canvas id="chart"></canvas>
+  </div>
+
+<script>
+let portfolio = JSON.parse(localStorage.getItem("portfolio")||"[]");
+let history   = JSON.parse(localStorage.getItem("history")||"[]");
+let chart;
+
+function saveAsset(){
+  const idx = document.getElementById("editIndex").value;
+  const name = document.getElementById("name").value.trim();
+  const category = document.getElementById("category").value;
+  const buy = parseFloat(document.getElementById("buy").value);
+  const current = parseFloat(document.getElementById("current").value);
+  const amount = parseFloat(document.getElementById("amount").value);
+
+  if(!name || Number.isNaN(buy) || Number.isNaN(current) || Number.isNaN(amount)){
+    alert("Tüm alanları doğru doldur."); return;
+  }
+  const asset = {name, category, buy, current, amount};
+
+  if(idx==="") portfolio.push(asset);
+  else portfolio[parseInt(idx,10)] = asset;
+
+  localStorage.setItem("portfolio", JSON.stringify(portfolio));
+  clearForm(); renderPortfolio();
+}
+
+function editAsset(i){
+  const a = portfolio[i];
+  name.value=a.name; category.value=a.category; buy.value=a.buy; current.value=a.current; amount.value=a.amount;
+  editIndex.value=i;
+}
+
+function deleteAsset(i){
+  portfolio.splice(i,1);
+  localStorage.setItem("portfolio", JSON.stringify(portfolio));
+  renderPortfolio();
+}
+
+function renderPortfolio(){
+  const table = document.getElementById("portfolioTable");
+  table.innerHTML = `
+    <tr><th>Varlık</th><th>Kategori</th><th>Yatırım</th><th>Güncel</th><th>K/Z</th><th>İşlem</th></tr>
+  `;
+  let total=0;
+  portfolio.forEach((a,i)=>{
+    const invested=a.buy*a.amount;
+    const cur=a.current*a.amount;
+    const profit=cur-invested;
+    total+=cur;
+    const cls = profit>=0 ? "profit":"loss";
+    table.innerHTML += `
+      <tr>
+        <td>${a.name}</td><td>${a.category}</td>
+        <td>${invested.toFixed(2)}</td><td>${cur.toFixed(2)}</td>
+        <td class="${cls}">${profit.toFixed(2)}</td>
+        <td class="rowbtns">
+          <button onclick="editAsset(${i})">Düzenle</button>
+          <button class="danger" onclick="deleteAsset(${i})">Sil</button>
+        </td>
+      </tr>`;
+  });
+  totalValue.innerText = "Toplam Portföy: " + total.toFixed(2) + " ₺";
+}
+
+function getTotal(){
+  return portfolio.reduce((s,a)=>s+a.current*a.amount,0);
+}
+
+function saveSnapshot(){
+  const total = getTotal();
+  history.push({date:new Date().toISOString(), value: total});
+  localStorage.setItem("history", JSON.stringify(history));
+  generateReport();
+}
+
+function filterData(type){
+  const now = new Date();
+  const ms = {day:86400000, week:604800000, month:2592000000, year:31536000000}[type];
+  return history.filter(h => (now - new Date(h.date)) <= ms);
+}
+
+function generateReport(){
+  const type = document.getElementById("reportType").value;
+  const data = filterData(type);
+  const labels = data.map(d=> new Date(d.date).toLocaleString());
+  const values = data.map(d=> d.value);
+
+  if(chart) chart.destroy();
+  const ctx = document.getElementById("chart").getContext("2d");
+  chart = new Chart(ctx, {
+    type:"line",
+    data:{ labels, datasets:[{label:"Portföy Değeri", data:values}] }
+  });
+}
+
+function clearForm(){ name.value=""; buy.value=""; current.value=""; amount.value=""; editIndex.value=""; }
+
+renderPortfolio(); generateReport();
+</script>
+</body>
+</html>
