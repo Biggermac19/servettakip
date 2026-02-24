@@ -5,79 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Servet Takip</title>
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      background: #0b0f14; /* arkayı koyu tutuyoruz */
-      overflow: hidden;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
+    html, body { height: 100%; margin: 0; background:#07090c; overflow:hidden; }
 
-    /* 1920x1080 sahneyi ekrana sığdırıp ortalayan wrapper */
-    .wrap {
+    /* Arka plan */
+    body::before{
+      content:"";
       position: fixed;
       inset: 0;
-      display: grid;
-      place-items: center;
+      background:
+        radial-gradient(1200px 700px at 50% 40%, rgba(80,90,110,0.35), rgba(10,12,16,0.95) 70%),
+        radial-gradient(900px 500px at 55% 30%, rgba(90,110,140,0.18), rgba(0,0,0,0) 60%);
     }
 
-    /* Sahne: tüm assetler 1920x1080 tam canvas üstüne oturuyor */
-    .stage {
-      position: relative;
-      width: 1920px;
-      height: 1080px;
-      transform-origin: center center;
-    }
-
-    /* Tüm layer'lar: 0,0’dan başlar ve tam sahne boyutunda */
-    .layer {
-      position: absolute;
+    /* Ortala */
+    .wrap{
+      position: fixed;
       inset: 0;
+      display:grid;
+      place-items:center;
+      z-index: 1;
+    }
+
+    /* 1920x1080 sahne */
+    .stage{
       width: 1920px;
       height: 1080px;
-      user-select: none;
-      -webkit-user-drag: none;
+      position: relative;
+      transform-origin: center center;
+
+      /* NETLİK İÇİN: zoom ile ölçekleyeceğiz (JS ayarlıyor) */
+      zoom: 1;
+    }
+
+    /* Her layer tam ekran */
+    .layer{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      pointer-events:none;
+      user-select:none;
+
+      /* Netlik tweak'leri */
       image-rendering: auto;
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div id="stage" class="stage" aria-label="Servet Takip Ana Ekran">
-      <!-- Sıralama önemli: alttan üste doğru -->
+    <div class="stage" id="stage">
+
       <img class="layer" src="assets/frame_panel.png" alt="" />
-      <img class="layer" src="assets/logo_servet-takip.png" alt="Servet Takip" />
-      <img class="layer" src="assets/btn_menu.png" alt="Menü" />
-      <img class="layer" src="assets/btn_hesabim.png" alt="Hesabım" />
+      <img class="layer" src="assets/logo_servet-takip.png" alt="" />
 
-      <img class="layer" src="assets/btn_grafik-degistir.png" alt="Grafik Değiştir" />
-      <img class="layer" src="assets/btn_grafik-ayarlari.png" alt="Grafik Ayarları" />
+      <img class="layer" src="assets/btn_hesabim.png" alt="" />
+      <img class="layer" src="assets/btn_grafik-degistir.png" alt="" />
+      <img class="layer" src="assets/btn_grafik-ayarlari.png" alt="" />
 
-      <img class="layer" src="assets/labels_varliklar.png" alt="" />
+      <img class="layer" src="assets/btn_menu.png" alt="" />
+
       <img class="layer" src="assets/chart_pie.png" alt="" />
+      <img class="layer" src="assets/labels_varliklar.png" alt="" />
       <img class="layer" src="assets/percent_texts.png" alt="" />
 
       <img class="layer" src="assets/text_servet-ozet.png" alt="" />
-      <img class="layer" src="assets/btn_varlik-ekle.png" alt="Varlık Ekle" />
+
+      <img class="layer" src="assets/btn_varlik-ekle.png" alt="" />
     </div>
   </div>
 
   <script>
-    // 1920x1080 sahneyi bozmadan (uniform) ekrana sığdırma
-    (function () {
-      const W = 1920, H = 1080;
-      const stage = document.getElementById("stage");
+    // Zoom ile sahneyi ekrana sığdır (transform scale yerine)
+    const stage = document.getElementById('stage');
 
-      function fit() {
-        const sw = window.innerWidth / W;
-        const sh = window.innerHeight / H;
-        const s = Math.min(sw, sh);
-        stage.style.transform = `scale(${s})`;
-      }
+    function fit() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const scale = Math.min(vw / 1920, vh / 1080);
 
-      window.addEventListener("resize", fit, { passive: true });
-      fit();
-    })();
+      // zoom bazı tarayıcılarda 1.25 vs gibi kesirlerde daha net oluyor
+      stage.style.zoom = String(scale);
+    }
+
+    window.addEventListener('resize', fit, { passive: true });
+    fit();
   </script>
 </body>
 </html>
