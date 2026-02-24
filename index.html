@@ -1,53 +1,83 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<title>Servet Takip</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Servet Takip</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: #0b0f14; /* arkayı koyu tutuyoruz */
+      overflow: hidden;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
 
-<style>
-body {
-    margin:0;
-    background:#000;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-}
+    /* 1920x1080 sahneyi ekrana sığdırıp ortalayan wrapper */
+    .wrap {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
 
-#app {
-    position:relative;
-    width:1920px;
-    height:1080px;
-    overflow:hidden;
-}
+    /* Sahne: tüm assetler 1920x1080 tam canvas üstüne oturuyor */
+    .stage {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      transform-origin: center center;
+    }
 
-/* Hepsi orijinal boyutta */
-#app img {
-    position:absolute;
-    width:1920px;
-    height:1080px;
-    image-rendering:auto;
-}
-</style>
+    /* Tüm layer'lar: 0,0’dan başlar ve tam sahne boyutunda */
+    .layer {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+      user-select: none;
+      -webkit-user-drag: none;
+      image-rendering: auto;
+    }
+  </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <div id="stage" class="stage" aria-label="Servet Takip Ana Ekran">
+      <!-- Sıralama önemli: alttan üste doğru -->
+      <img class="layer" src="assets/frame_panel.png" alt="" />
+      <img class="layer" src="assets/logo_servet-takip.png" alt="Servet Takip" />
+      <img class="layer" src="assets/btn_menu.png" alt="Menü" />
+      <img class="layer" src="assets/btn_hesabim.png" alt="Hesabım" />
 
-<div id="app">
+      <img class="layer" src="assets/btn_grafik-degistir.png" alt="Grafik Değiştir" />
+      <img class="layer" src="assets/btn_grafik-ayarlari.png" alt="Grafik Ayarları" />
 
-<img src="assets/background.png">
-<img src="assets/frame.png">
-<img src="assets/pie.png">
-<img src="assets/menu.png">
-<img src="assets/account.png">
-<img src="assets/settings.png">
-<img src="assets/change_graph.png">
-<img src="assets/labels.png">
-<img src="assets/totals.png">
-<img src="assets/add_button.png">
-<img src="assets/logo.png">
+      <img class="layer" src="assets/labels_varliklar.png" alt="" />
+      <img class="layer" src="assets/chart_pie.png" alt="" />
+      <img class="layer" src="assets/percent_texts.png" alt="" />
 
-</div>
+      <img class="layer" src="assets/text_servet-ozet.png" alt="" />
+      <img class="layer" src="assets/btn_varlik-ekle.png" alt="Varlık Ekle" />
+    </div>
+  </div>
 
+  <script>
+    // 1920x1080 sahneyi bozmadan (uniform) ekrana sığdırma
+    (function () {
+      const W = 1920, H = 1080;
+      const stage = document.getElementById("stage");
+
+      function fit() {
+        const sw = window.innerWidth / W;
+        const sh = window.innerHeight / H;
+        const s = Math.min(sw, sh);
+        stage.style.transform = `scale(${s})`;
+      }
+
+      window.addEventListener("resize", fit, { passive: true });
+      fit();
+    })();
+  </script>
 </body>
 </html>
