@@ -88,7 +88,7 @@
       const scale = Math.min(vw / 1920, vh / 1080);
 
       // zoom bazı tarayıcılarda 1.25 vs gibi kesirlerde daha net oluyor
-      stage.style.zoom = String(scale);
+      stage.style.zoom = String(Math.round(scale * 100) / 100);
     }
 
     window.addEventListener('resize', fit, { passive: true });
