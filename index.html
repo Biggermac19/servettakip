@@ -3,168 +3,556 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Servet Takip</title>
+  <title>Servet Takip (MVP)</title>
 
-  <!-- Baloo -->
+  <!-- Font (Baloo 2) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg:#14161c;
-      --text:#bfbfbf;
+      --bg: #14161C;                 /* senin verdiğin */
+      --text: #B6B6B6;
+      --text-strong: #D0D0D0;
+      --shadow: rgba(0,0,0,.55);
+
+      /* Pie renkleri (yakın tonlar) */
+      --c-borsa: #C3A3FF;
+      --c-gayrimenkul: #9FD7FF;
+      --c-altin: #E6D08A;
     }
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
     body{
       margin:0;
-      background: var(--bg);
-      font-family:"Baloo 2", system-ui, sans-serif;
-      overflow:hidden; /* cover scale ile taşan kısımları kırp */
+      font-family:"Baloo 2", system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1100px 700px at 40% 10%, rgba(255,255,255,.06), transparent 60%),
+        radial-gradient(900px 650px at 70% 20%, rgba(255,255,255,.035), transparent 60%),
+        var(--bg);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
-    /* Ekranı dolduran sahne (cover) */
+    /* Sahne */
     .viewport{
       width:100vw;
       height:100vh;
-      position:relative;
-      overflow:hidden;
-      background: radial-gradient(1200px 600px at 50% 0%, rgba(255,255,255,.05), transparent 60%), var(--bg);
-    }
-
-    /* 1440x900 tasarım alanı */
-    .stage{
-      width:1440px;
-      height:900px;
-      position:absolute;
-      left:50%;
-      top:50%;
-      transform: translate(-50%,-50%) scale(1);
-      transform-origin:center center;
-    }
-
-    /* Hepsi absolute yerleşecek */
-    .abs{position:absolute; display:block}
-
-    /* Header parçaları */
-    .menu{ left:120px; top:125px; width:380px; }
-    .account{ right:120px; top:120px; width:379px; }
-
-    .brandWrap{
-      position:absolute;
-      left:50%;
-      top:40px;
-      transform:translateX(-50%);
       display:flex;
       align-items:center;
-      gap:18px;
+      justify-content:center;
     }
-    .brandWrap img{
-      width:90px;
-      height:90px;
-      border-radius:10px;
-      box-shadow:0 14px 30px rgba(0,0,0,.35);
+    .stage-wrap{
+      position:relative;
+      width:1440px;
+      height:900px;
+      transform-origin: top left;
+      will-change: transform;
     }
-    .brandText{
-      font-size:44px;
-      font-weight:800;
+    .stage{
+      position:absolute;
+      inset:0;
+    }
+
+    /* Asset layer */
+    .asset{
+      position:absolute;
+      inset:0;
+      width:1440px;
+      height:900px;
+      pointer-events:none;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+
+    /* Dinamik yazılar */
+    .t{
+      position:absolute;
       color:var(--text);
-      opacity:.95;
-      text-shadow:0 12px 24px rgba(0,0,0,.35);
+      text-shadow: 0 6px 10px var(--shadow);
+      letter-spacing: .2px;
+      white-space:nowrap;
+    }
+    .t strong{ color:var(--text-strong); }
+
+    /* Totals konumları (1440x900 referans) */
+    #totalLine{
+      left:50%;
+      top:548px;
+      transform:translateX(-50%);
+      font-size:48px;
+      font-weight:800;
+    }
+    #activeLine{
+      left:270px;
+      top:670px;
+      font-size:38px;
+      font-weight:800;
+    }
+    #passiveLine{
+      right:250px;
+      top:670px;
+      font-size:38px;
+      font-weight:800;
+      text-align:right;
+    }
+
+    /* Pie + label konumları */
+    .label{
+      font-size:42px;
+      font-weight:800;
+    }
+    .pct{
+      font-size:46px;
+      font-weight:900;
+      color:#111;               /* görseldeki gibi koyu yüzde */
+      text-shadow: 0 10px 18px rgba(0,0,0,.35);
+    }
+
+    /* Yaklaşık yerleşimler (tasarıma yakın) */
+    #lblBorsa   { left:560px; top:250px; }
+    #lblAltin   { left:500px; top:420px; }
+    #lblGayrim  { left:910px; top:310px; }
+
+    #pctBorsa   { left:690px; top:250px; }
+    #pctAltin   { left:650px; top:410px; }
+    #pctGayrim  { left:760px; top:325px; }
+
+    /* Pie container */
+    .pieWrap{
+      position:absolute;
+      left:610px;
+      top:190px;
+      width:330px;
+      height:330px;
+      display:grid;
+      place-items:center;
+      pointer-events:none;
+    }
+
+    /* SVG pie: 3D hissi için filtre */
+    svg{ overflow:visible; }
+
+    /* Tıklanabilir butonlar (assetler üstünde) */
+    .hit{
+      position:absolute;
+      cursor:pointer;
+      border-radius:24px;
+    }
+
+    /* Varlık Ekle butonu hitbox */
+    #hitAdd{
+      left:540px; top:690px;
+      width:360px; height:220px;
+    }
+    /* Menü / Hesabım / Grafik değiştir / ayarları hitbox */
+    #hitMenu{ left:70px; top:90px; width:240px; height:220px; border-radius:32px; }
+    #hitAccount{ right:70px; top:70px; width:240px; height:260px; border-radius:32px; }
+    #hitChartChange{ right:200px; top:180px; width:260px; height:120px; border-radius:20px; }
+    #hitChartSettings{ right:200px; top:400px; width:280px; height:140px; border-radius:20px; }
+
+    /* Panel */
+    .modal{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .modal.open{ display:flex; }
+
+    .panel{
+      width:min(720px, 92vw);
+      background: rgba(25,28,36,.92);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 20px 60px rgba(0,0,0,.55);
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      color: #E6E6E6;
+      backdrop-filter: blur(10px);
+    }
+    .panel h2{
+      margin:0 0 12px 0;
+      font-size:26px;
       letter-spacing:.2px;
     }
-
-    /* Grafik kartı */
-    .frame{ left:200px; top:170px; width:1040px; } /* frame.png kırpılmış hali: 1040x480 */
-    .pie{ left:489px; top:235px; width:462px; }   /* pie.png kırpılmış hali */
-    .labels{ left:193px; top:255px; width:1054px; } /* labels_percents.png */
-
-    /* Sağ üst/alt kontroller */
-    .chartChange{ left:1000px; top:190px; width:300px; }    /* kırpılmış görsel büyük; burada küçültüyoruz */
-    .chartSettings{ left:985px; top:440px; width:330px; }
-
-    /* Toplam yazıları */
-    .totals{
-      position:absolute;
-      left:50%;
-      top:650px;
-      transform:translateX(-50%);
-      width:1440px;
-      text-align:center;
-      color:var(--text);
-      text-shadow:0 16px 30px rgba(0,0,0,.35);
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
     }
-    .totals .big{
-      font-size:54px;
-      font-weight:800;
-      opacity:.95;
-    }
-    .totals .row{
-      margin-top:26px;
+    .field{
       display:flex;
-      justify-content:center;
-      gap:90px;
-      font-size:40px;
+      flex-direction:column;
+      gap:6px;
+    }
+    label{
+      font-size:14px;
+      color: rgba(255,255,255,.75);
+    }
+    input, select{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(10,12,16,.65);
+      color:#fff;
+      outline:none;
+      font-family:inherit;
+      font-size:16px;
+    }
+    input:focus, select:focus{
+      border-color: rgba(255,255,255,.28);
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+      margin-top:14px;
+    }
+    .btn{
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      color:#fff;
       font-weight:800;
-      opacity:.95;
+      cursor:pointer;
+    }
+    .btn.primary{
+      background: rgba(60, 220, 140, .18);
+      border-color: rgba(60, 220, 140, .35);
     }
 
-    /* Varlık ekle */
-    .add{ left:455px; top:720px; width:530px; } /* add.png kırpılmış hali: 531x629; sahnede uygun küçültüyoruz */
+    /* Küçük debug (istersen açarsın)
+    .dbg { outline: 1px dashed rgba(255,0,0,.35); }
+    */
   </style>
 </head>
 
 <body>
-  <div class="viewport" id="viewport">
-    <div class="stage" id="stage">
+  <div class="viewport">
+    <div class="stage-wrap" id="stageWrap">
+      <div class="stage">
 
-      <!-- Header -->
-      <img class="abs menu" src="assets/menu.png" alt="Menü">
-      <img class="abs account" src="assets/account.png" alt="Hesabım">
+        <!-- Arka planın üstüne asset katmanları (hepsi 1440x900 sahne) -->
+        <img class="asset" src="assets/header_logo_big.png" alt="" />
+        <img class="asset" src="assets/menu_big.png" alt="" />
+        <img class="asset" src="assets/account_big.png" alt="" />
+        <img class="asset" src="assets/frame_big.png" alt="" />
+        <img class="asset" src="assets/chart_change_big.png" alt="" />
+        <img class="asset" src="assets/chart_settings_big.png" alt="" />
+        <img class="asset" src="assets/add_big.png" alt="" />
 
-      <div class="brandWrap">
-        <img src="assets/logo.png" alt="Servet Takip">
-        <div class="brandText">Servet Takip</div>
-      </div>
+        <!-- Dinamik Pie (PNG yerine SVG: yüzdeler değişsin diye) -->
+        <div class="pieWrap" aria-hidden="true">
+          <svg width="320" height="320" viewBox="0 0 320 320">
+            <defs>
+              <!-- Yumuşak dış gölge -->
+              <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="rgba(0,0,0,.55)"/>
+              </filter>
 
-      <!-- Chart frame -->
-      <img class="abs frame" src="assets/frame.png" alt="">
-      <img class="abs pie" src="assets/pie.png" alt="">
-      <img class="abs labels" src="assets/labels_percents.png" alt="">
+              <!-- Hafif 3D parıltı -->
+              <radialGradient id="shine" cx="30%" cy="20%" r="75%">
+                <stop offset="0%" stop-color="rgba(255,255,255,.55)"/>
+                <stop offset="55%" stop-color="rgba(255,255,255,.12)"/>
+                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+              </radialGradient>
 
-      <img class="abs chartChange" src="assets/chart_change.png" alt="">
-      <img class="abs chartSettings" src="assets/chart_settings.png" alt="">
+              <clipPath id="clipCircle">
+                <circle cx="160" cy="160" r="116"></circle>
+              </clipPath>
+            </defs>
 
-      <!-- Totals -->
-      <div class="totals">
-        <div class="big">Servetim: 2.955.245,87₺</div>
-        <div class="row">
-          <div>Aktif Servetim: 2.000.000₺</div>
-          <div>Pasif Servetim: 955.245,87₺</div>
+            <!-- Segmentler: path'leri JS üretecek -->
+            <g filter="url(#ds)" id="pieSegs"></g>
+
+            <!-- Üstten parıltı -->
+            <g clip-path="url(#clipCircle)">
+              <circle cx="140" cy="140" r="150" fill="url(#shine)"></circle>
+            </g>
+
+            <!-- İç boşluk efekti (çok küçük) -->
+            <circle cx="160" cy="160" r="6" fill="rgba(0,0,0,.25)"></circle>
+          </svg>
         </div>
+
+        <!-- Dinamik label + yüzdeler -->
+        <div class="t label" id="lblBorsa">Borsa</div>
+        <div class="t label" id="lblAltin">Altın</div>
+        <div class="t label" id="lblGayrim">Gayrimenkul</div>
+
+        <div class="t pct" id="pctBorsa">%35</div>
+        <div class="t pct" id="pctAltin">%25</div>
+        <div class="t pct" id="pctGayrim">%40</div>
+
+        <!-- Dinamik toplamlar -->
+        <div class="t" id="totalLine">Servetim: <strong id="totalVal">0 ₺</strong></div>
+        <div class="t" id="activeLine">Aktif Servetim: <strong id="activeVal">0 ₺</strong></div>
+        <div class="t" id="passiveLine">Pasif Servetim: <strong id="passiveVal">0 ₺</strong></div>
+
+        <!-- Hitboxes -->
+        <div class="hit" id="hitAdd" title="Varlık Ekle"></div>
+        <div class="hit" id="hitMenu" title="Menü"></div>
+        <div class="hit" id="hitAccount" title="Hesabım"></div>
+        <div class="hit" id="hitChartChange" title="Grafik Değiştir"></div>
+        <div class="hit" id="hitChartSettings" title="Grafik Ayarları"></div>
+
+        <!-- Modal / Panel -->
+        <div class="modal" id="modal">
+          <div class="panel">
+            <h2>Varlık Dağılımı (Dinamik)</h2>
+
+            <div class="grid">
+              <div class="field">
+                <label for="inBorsa">Borsa (₺)</label>
+                <input id="inBorsa" type="number" min="0" step="100" />
+              </div>
+
+              <div class="field">
+                <label for="inBorsaType">Borsa türü</label>
+                <select id="inBorsaType">
+                  <option value="active">Aktif</option>
+                  <option value="passive">Pasif</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="inAltin">Altın (₺)</label>
+                <input id="inAltin" type="number" min="0" step="100" />
+              </div>
+
+              <div class="field">
+                <label for="inAltinType">Altın türü</label>
+                <select id="inAltinType">
+                  <option value="active">Aktif</option>
+                  <option value="passive">Pasif</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="inGayrim">Gayrimenkul (₺)</label>
+                <input id="inGayrim" type="number" min="0" step="1000" />
+              </div>
+
+              <div class="field">
+                <label for="inGayrimType">Gayrimenkul türü</label>
+                <select id="inGayrimType">
+                  <option value="active">Aktif</option>
+                  <option value="passive">Pasif</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row">
+              <button class="btn" id="btnClose">Kapat</button>
+              <button class="btn primary" id="btnSave">Kaydet</button>
+            </div>
+
+            <div style="margin-top:10px;color:rgba(255,255,255,.65);font-size:13px;">
+              Not: Bu MVP’de yüzdeler ve toplamlar otomatik hesaplanır. Sonra bunu “varlık listesi” + “tarihsel kayıt” kısmına bağlarız.
+            </div>
+          </div>
+        </div>
+
       </div>
-
-      <!-- Add -->
-      <img class="abs add" src="assets/add.png" alt="Varlık Ekle">
-
     </div>
   </div>
 
-  <script>
-    // 1440x900 tasarımı ekrana "cover" şekilde ölçekle (boşluk bırakmaz)
-    const BASE_W = 1440, BASE_H = 900;
-    const stage = document.getElementById("stage");
+<script>
+  // --- Sahne ölçekleme (1440x900 -> ekrana sığdır) ---
+  const stageWrap = document.getElementById("stageWrap");
+  function fitStage(){
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const scale = Math.min(w/1440, h/900);
+    stageWrap.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener("resize", fitStage);
+  fitStage();
 
-    function resize(){
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const scale = Math.max(vw / BASE_W, vh / BASE_H); // COVER
-      stage.style.transform = `translate(-50%,-50%) scale(${scale})`;
+  // --- Basit state (ileride localStorage / backend) ---
+  const state = {
+    borsa: 1000000,
+    altin: 700000,
+    gayrimenkul: 1255245.87,
+    types: {
+      borsa: "active",
+      altin: "active",
+      gayrimenkul: "passive"
     }
-    window.addEventListener("resize", resize);
-    resize();
-  </script>
+  };
+
+  // --- TR format ---
+  const fmtTRY = (n) => {
+    const v = Number(n || 0);
+    return v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "₺";
+  };
+
+  // --- Yüzde ---
+  const pct = (part, total) => {
+    if(total <= 0) return 0;
+    return Math.round((part / total) * 100);
+  };
+
+  // --- SVG pie path helpers ---
+  function polarToCartesian(cx, cy, r, angleDeg){
+    const a = (angleDeg - 90) * Math.PI / 180.0;
+    return { x: cx + (r * Math.cos(a)), y: cy + (r * Math.sin(a)) };
+  }
+  function arcPath(cx, cy, r, startAngle, endAngle){
+    const start = polarToCartesian(cx, cy, r, endAngle);
+    const end   = polarToCartesian(cx, cy, r, startAngle);
+    const largeArc = endAngle - startAngle <= 180 ? "0" : "1";
+    return [
+      `M ${cx} ${cy}`,
+      `L ${start.x} ${start.y}`,
+      `A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y}`,
+      "Z"
+    ].join(" ");
+  }
+
+  function render(){
+    const total = state.borsa + state.altin + state.gayrimenkul;
+
+    // totals
+    document.getElementById("totalVal").textContent = fmtTRY(total);
+
+    // aktif/pasif
+    const active = (state.types.borsa === "active" ? state.borsa : 0)
+                 + (state.types.altin === "active" ? state.altin : 0)
+                 + (state.types.gayrimenkul === "active" ? state.gayrimenkul : 0);
+
+    const passive = total - active;
+
+    document.getElementById("activeVal").textContent = fmtTRY(active);
+    document.getElementById("passiveVal").textContent = fmtTRY(passive);
+
+    // pct values
+    const pB = pct(state.borsa, total);
+    const pA = pct(state.altin, total);
+    const pG = 100 - pB - pA; // yuvarlamada taşarsa diye sonuncuyu residual yapıyoruz
+
+    document.getElementById("pctBorsa").textContent  = `%${pB}`;
+    document.getElementById("pctAltin").textContent  = `%${pA}`;
+    document.getElementById("pctGayrim").textContent = `%${pG}`;
+
+    // pie segments (order: borsa, gayrimenkul, altin) -> görsele yakın dağılım
+    const segs = [
+      { key:"borsa", val: state.borsa, color: getComputedStyle(document.documentElement).getPropertyValue("--c-borsa").trim() },
+      { key:"gayrim", val: state.gayrimenkul, color: getComputedStyle(document.documentElement).getPropertyValue("--c-gayrimenkul").trim() },
+      { key:"altin", val: state.altin, color: getComputedStyle(document.documentElement).getPropertyValue("--c-altin").trim() },
+    ];
+
+    const g = document.getElementById("pieSegs");
+    g.innerHTML = "";
+
+    let angle = 0;
+    const cx=160, cy=160, r=116;
+
+    // hafif “ayrık” görünüm için her seg'e küçük offset
+    const offsets = {
+      borsa: {dx:-6, dy:-4},
+      gayrim: {dx: 8, dy: 2},
+      altin: {dx:-4, dy: 8}
+    };
+
+    segs.forEach((s)=>{
+      const portion = total > 0 ? (s.val / total) : 0;
+      const sweep = portion * 360;
+
+      const start = angle;
+      const end   = angle + sweep;
+
+      // segment path
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", arcPath(cx, cy, r, start, end));
+      path.setAttribute("fill", s.color);
+
+      // 3D hissi: üst ışık + alt gölge için basit overlay
+      path.setAttribute("opacity", "0.98");
+
+      // offset
+      const {dx,dy} = offsets[s.key] || {dx:0,dy:0};
+      path.setAttribute("transform", `translate(${dx},${dy})`);
+
+      // küçük iç gölge hissi
+      path.style.filter = "drop-shadow(0px 10px 8px rgba(0,0,0,.35))";
+
+      g.appendChild(path);
+
+      angle += sweep;
+    });
+  }
+
+  // --- Modal ---
+  const modal = document.getElementById("modal");
+  const openModal = ()=> modal.classList.add("open");
+  const closeModal = ()=> modal.classList.remove("open");
+
+  document.getElementById("hitAdd").addEventListener("click", openModal);
+  document.getElementById("btnClose").addEventListener("click", closeModal);
+  modal.addEventListener("click", (e)=>{ if(e.target === modal) closeModal(); });
+
+  // diğer butonlar şimdilik bilgi
+  document.getElementById("hitMenu").addEventListener("click", ()=>alert("Menü: sonra panel yapacağız."));
+  document.getElementById("hitAccount").addEventListener("click", ()=>alert("Hesabım: sonra giriş/abonelik ekleyeceğiz."));
+  document.getElementById("hitChartChange").addEventListener("click", ()=>alert("Grafik Değiştir: sonra pasta/çizgi/bar seçenekleri."));
+  document.getElementById("hitChartSettings").addEventListener("click", ()=>alert("Grafik Ayarları: renk, kategori, görünürlük."));
+
+  // inputs
+  const inBorsa = document.getElementById("inBorsa");
+  const inAltin = document.getElementById("inAltin");
+  const inGayrim = document.getElementById("inGayrim");
+  const inBorsaType = document.getElementById("inBorsaType");
+  const inAltinType = document.getElementById("inAltinType");
+  const inGayrimType = document.getElementById("inGayrimType");
+
+  function syncForm(){
+    inBorsa.value = Math.round(state.borsa);
+    inAltin.value = Math.round(state.altin);
+    inGayrim.value = Math.round(state.gayrimenkul);
+    inBorsaType.value = state.types.borsa;
+    inAltinType.value = state.types.altin;
+    inGayrimType.value = state.types.gayrimenkul;
+  }
+
+  document.getElementById("btnSave").addEventListener("click", ()=>{
+    state.borsa = Math.max(0, Number(inBorsa.value || 0));
+    state.altin = Math.max(0, Number(inAltin.value || 0));
+    state.gayrimenkul = Math.max(0, Number(inGayrim.value || 0));
+    state.types.borsa = inBorsaType.value;
+    state.types.altin = inAltinType.value;
+    state.types.gayrimenkul = inGayrimType.value;
+
+    // localStorage (kalıcı)
+    localStorage.setItem("st_state_v1", JSON.stringify(state));
+
+    render();
+    closeModal();
+  });
+
+  // init from storage
+  try{
+    const saved = localStorage.getItem("st_state_v1");
+    if(saved){
+      const parsed = JSON.parse(saved);
+      if(parsed && typeof parsed === "object"){
+        Object.assign(state, parsed);
+        state.types = parsed.types || state.types;
+      }
+    }
+  }catch(_){}
+
+  syncForm();
+  render();
+</script>
 </body>
 </html>
