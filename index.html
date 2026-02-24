@@ -11,7 +11,6 @@
       --bg2:#121318;
       --text:#d9d9d9;
       --muted:#bdbdbd;
-      --line:rgba(255,255,255,.35);
       --cardline:rgba(255,255,255,.45);
       --shadow:rgba(0,0,0,.55);
 
@@ -30,83 +29,118 @@
         linear-gradient(180deg,var(--bg1),var(--bg2));
     }
 
+    /* === 1440x900 master layout === */
+    .frame{
+      width:1440px;
+      height:900px;
+      margin:0 auto;
+      position:relative;
+      overflow:hidden;
+    }
+
     /* Top */
     .topbar{
-      height:90px;
+      height:108px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 46px;
+      padding:18px 60px 0;
       gap:20px;
     }
-    .top-left, .top-right{display:flex;align-items:center;gap:14px;min-width:220px}
-    .top-center{display:flex;align-items:center;gap:16px;justify-content:center;flex:1}
+    .top-left, .top-right{display:flex;align-items:flex-start;gap:14px;min-width:240px}
+    .top-center{display:flex;align-items:center;gap:18px;justify-content:center;flex:1}
+
     .brand{
       display:flex;align-items:center;gap:16px;
-      font-size:34px;font-weight:800; letter-spacing:.4px;
+      font-size:36px;font-weight:900; letter-spacing:.4px;
       color:#bfbfbf;
       text-shadow: 0 2px 12px rgba(0,0,0,.35);
+      margin-top:6px;
     }
+
     .logo{
-      width:80px;height:80px;border-radius:12px;
+      width:86px;height:86px;border-radius:12px;
       background:#ffd400;
       display:grid;place-items:center;
       box-shadow:0 10px 22px rgba(0,0,0,.25);
+      margin-top:0;
     }
-    .logo span{
-      font-weight:900;
-      font-size:54px;
-      color:#0c0c0c;
+    .logo .mark{
       position:relative;
-      line-height:1;
+      width:70px;height:70px;
+      display:grid;place-items:center;
     }
-    .logo span::after{
-      content:"₺";
+    .logo .s{
+      font-weight:1000;
+      font-size:58px;
+      color:#0c0c0c;
+      line-height:1;
+      transform: translateX(-2px); /* S biraz sola */
+    }
+    /* ₺ işaretini S ile "kaynaştır" */
+    .logo .try{
       position:absolute;
+      right:-2px;
+      top:11px;
       font-size:18px;
-      right:-10px; top:8px;
-      transform:rotate(-20deg);
-      opacity:.9;
+      font-weight:1000;
+      color:#0c0c0c;
+      transform:rotate(-18deg);
+      opacity:.95;
+      letter-spacing:-1px;
     }
 
     .iconBtn{
-      display:flex;flex-direction:column;align-items:center;gap:10px;
+      display:flex;flex-direction:column;align-items:center;gap:12px;
       color:var(--muted);
       user-select:none;
     }
-    .iconBtn .label{font-weight:700;font-size:22px;letter-spacing:.2px}
+    .iconBtn .label{font-weight:800;font-size:22px;letter-spacing:.2px}
+
     .icon{
-      width:56px;height:56px;opacity:.9;
+      width:58px;height:58px;opacity:.9;
       filter: drop-shadow(0 8px 14px rgba(0,0,0,.35));
     }
     .hamburger{
-      width:70px;height:56px;
+      width:74px;height:58px;
       display:flex;flex-direction:column;justify-content:center;gap:10px;
       opacity:.85;
+      margin-top:6px;
     }
-    .hamburger div{height:4px;border-radius:4px;background:#cfcfcf;width:68px}
-    .hamburger div:nth-child(2){width:56px}
+    .hamburger div{height:4px;border-radius:4px;background:#cfcfcf;width:72px}
+    .hamburger div:nth-child(2){width:58px}
 
     /* Main card */
-    .wrap{max-width:1120px;margin:18px auto 0; padding:0 18px}
+    .wrap{
+      width:1440px;
+      margin:0 auto;
+      padding:0 60px;
+    }
     .chartCard{
       position:relative;
       border:3px solid var(--cardline);
       border-radius:4px;
-      padding:18px 18px 22px;
-      height:360px;
+      padding:22px 22px 22px;
+      height:380px;
       display:flex;
       align-items:center;
       justify-content:center;
       box-shadow:0 16px 40px var(--shadow);
       background: rgba(0,0,0,.08);
       overflow:hidden;
+      margin-top:8px;
     }
+
     .cardCorner{
-      position:absolute; right:16px;
-      display:flex; flex-direction:column; gap:22px;
+      position:absolute;
+      right:18px;
+      top:18px;
+      bottom:18px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
       color:var(--muted);
-      font-weight:800;
+      font-weight:900;
       text-align:right;
       font-size:18px;
       opacity:.95;
@@ -120,31 +154,35 @@
     }
 
     .pieArea{
-      width:560px; height:300px;
+      width:620px; height:320px;
       position:relative;
       display:flex; align-items:center; justify-content:center;
+      transform: translateY(6px);
     }
-    /* Labels around pie */
+
+    /* Labels around pie (Canva'ya yakın) */
     .labelText{
       position:absolute;
       font-size:30px;
-      font-weight:800;
+      font-weight:900;
       color:#bfbfbf;
       text-shadow: 0 10px 20px rgba(0,0,0,.35);
       letter-spacing:.3px;
     }
-    .lbl-borsa{left:22px; top:70px}
-    .lbl-altin{left:34px; top:195px}
-    .lbl-gayrimenkul{right:-40px; top:125px}
+    .lbl-borsa{left:64px; top:76px}
+    .lbl-altin{left:76px; top:214px}
+    .lbl-gayrimenkul{right:-6px; top:130px}
 
     /* Totals */
     .totals{
-      margin:28px auto 0;
+      width:1440px;
+      margin:26px auto 0;
       text-align:center;
+      padding:0 60px;
     }
     .totals .big{
-      font-size:44px;
-      font-weight:900;
+      font-size:46px;
+      font-weight:1000;
       color:#cfcfcf;
       text-shadow:0 14px 30px rgba(0,0,0,.35);
       letter-spacing:.6px;
@@ -156,7 +194,7 @@
       gap:90px;
       flex-wrap:wrap;
       color:#c7c7c7;
-      font-weight:900;
+      font-weight:1000;
       font-size:34px;
       letter-spacing:.3px;
       text-shadow:0 14px 30px rgba(0,0,0,.35);
@@ -164,14 +202,16 @@
 
     /* Add button */
     .addWrap{
-      margin:32px auto 24px;
+      width:1440px;
+      margin:26px auto 0;
       display:flex;
       flex-direction:column;
       align-items:center;
       gap:14px;
+      padding:0 60px;
     }
     .addBtn{
-      width:160px;height:160px;border-radius:999px;
+      width:170px;height:170px;border-radius:999px;
       background: radial-gradient(circle at 30% 30%, #efefef, #cfcfcf 55%, #a9a9a9);
       box-shadow:
         inset 0 10px 18px rgba(255,255,255,.35),
@@ -182,7 +222,7 @@
       border:none;
     }
     .plus{
-      width:86px;height:86px;border-radius:18px;
+      width:90px;height:90px;border-radius:18px;
       position:relative;
       filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
     }
@@ -195,36 +235,34 @@
       box-shadow: inset 0 6px 10px rgba(255,255,255,.35),
                   inset 0 -6px 10px rgba(0,0,0,.12);
     }
-    .plus::before{width:96px;height:18px}
-    .plus::after{width:18px;height:96px}
+    .plus::before{width:100px;height:18px}
+    .plus::after{width:18px;height:100px}
 
     .addLabel{
       font-size:30px;
-      font-weight:900;
+      font-weight:1000;
       color:#bfbfbf;
       letter-spacing:.3px;
       text-shadow:0 14px 30px rgba(0,0,0,.35);
     }
 
-    /* Responsive */
-    @media (max-width: 980px){
-      .topbar{padding:0 18px}
-      .top-left,.top-right{min-width:auto}
-      .brand{font-size:26px}
-      .logo{width:64px;height:64px}
-      .logo span{font-size:44px}
-      .iconBtn .label{font-size:18px}
-      .wrap{margin-top:10px}
-      .chartCard{height:auto; padding:16px}
-      .pieArea{width:100%; height:320px}
-      .lbl-gayrimenkul{right:0}
-      .split{font-size:26px; gap:28px}
-      .totals .big{font-size:34px}
+    /* If screen smaller than 1440, scale down to fit (still keeps positions) */
+    @media (max-width: 1440px){
+      .frame{
+        transform: scale(calc(100vw / 1440));
+        transform-origin: top left;
+        width:1440px; height:900px;
+      }
+      body{overflow-x:hidden}
+    }
+    @media (max-width: 900px){
+      .frame{transform: scale(calc(100vw / 1440));}
     }
   </style>
 </head>
 <body>
 
+<div class="frame">
   <!-- TOP BAR -->
   <div class="topbar">
     <div class="top-left">
@@ -238,14 +276,16 @@
 
     <div class="top-center">
       <div class="logo" title="Servet Takip">
-        <span>S</span>
+        <div class="mark">
+          <div class="s">S</div>
+          <div class="try">₺</div>
+        </div>
       </div>
       <div class="brand">Servet Takip</div>
     </div>
 
     <div class="top-right" style="justify-content:flex-end">
       <div class="iconBtn">
-        <!-- user icon -->
         <svg class="icon" viewBox="0 0 24 24" fill="#cfcfcf" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 12c2.76 0 5-2.46 5-5.5S14.76 1 12 1 7 3.46 7 6.5 9.24 12 12 12Zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5Z"/>
         </svg>
@@ -254,20 +294,17 @@
     </div>
   </div>
 
-  <!-- CENTER CONTENT -->
   <div class="wrap">
     <div class="chartCard">
       <div class="cardCorner">
         <div class="cornerItem">
           <div>Grafik<br/>Değiştir</div>
-          <!-- mini chart icon -->
           <svg class="cornerIcon" viewBox="0 0 24 24" fill="#cfcfcf" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 19h16v2H2V3h2v16Zm3-2V9h3v8H7Zm5 0V5h3v12h-3Zm5 0v-6h3v6h-3Z"/>
           </svg>
         </div>
         <div class="cornerItem">
           <div>Grafik<br/>Ayarları</div>
-          <!-- gear icon -->
           <svg class="cornerIcon" viewBox="0 0 24 24" fill="#cfcfcf" xmlns="http://www.w3.org/2000/svg">
             <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.6 7.6 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 7.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.23.39.32.6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96c.22.1.47.01.6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/>
           </svg>
@@ -279,35 +316,33 @@
         <div class="labelText lbl-altin">Altın</div>
         <div class="labelText lbl-gayrimenkul">Gayrimenkul</div>
 
-        <canvas id="pie" width="420" height="260" style="max-width:420px;max-height:260px;"></canvas>
+        <canvas id="pie" width="440" height="280" style="max-width:440px;max-height:280px;"></canvas>
       </div>
-    </div>
-
-    <div class="totals">
-      <div class="big">Servetim: <span id="totalVal">2.955.245,87₺</span></div>
-
-      <div class="split">
-        <div>Aktif Servetim: <span id="activeVal">2.000.000₺</span></div>
-        <div>Pasif Servetim: <span id="passiveVal">955.245,87₺</span></div>
-      </div>
-    </div>
-
-    <div class="addWrap">
-      <button class="addBtn" onclick="alert('Varlık Ekle: bir sonraki adımda form/modal bağlayacağız.')">
-        <div class="plus" aria-hidden="true"></div>
-      </button>
-      <div class="addLabel">Varlık Ekle</div>
     </div>
   </div>
 
-<script>
-  // Canva'daki örnek oranlar
-  const data = [35, 25, 40]; // Borsa, Altın, Gayrimenkul
-  const labels = ["Borsa", "Altın", "Gayrimenkul"];
+  <div class="totals">
+    <div class="big">Servetim: <span id="totalVal">2.955.245,87₺</span></div>
+    <div class="split">
+      <div>Aktif Servetim: <span id="activeVal">2.000.000₺</span></div>
+      <div>Pasif Servetim: <span id="passiveVal">955.245,87₺</span></div>
+    </div>
+  </div>
 
+  <div class="addWrap">
+    <button class="addBtn" onclick="alert('Varlık Ekle: bir sonraki adımda form/modal bağlayacağız.')">
+      <div class="plus" aria-hidden="true"></div>
+    </button>
+    <div class="addLabel">Varlık Ekle</div>
+  </div>
+</div>
+
+<script>
+  const data = [35, 25, 40];
+  const labels = ["Borsa", "Altın", "Gayrimenkul"];
   const ctx = document.getElementById("pie").getContext("2d");
 
-  // Hafif "3D" hissi için gölge plugin
+  // Shadow + "raised" feel
   const shadowPlugin = {
     id: 'shadow',
     beforeDatasetsDraw(chart) {
@@ -318,9 +353,7 @@
       ctx.shadowOffsetX = 10;
       ctx.shadowOffsetY = 14;
     },
-    afterDatasetsDraw(chart) {
-      chart.ctx.restore();
-    }
+    afterDatasetsDraw(chart) { chart.ctx.restore(); }
   };
 
   new Chart(ctx, {
@@ -333,24 +366,17 @@
         borderColor: "rgba(0,0,0,.45)",
         borderWidth: 2,
         hoverOffset: 8,
-        spacing: 8,        // dilimler arası boşluk
-        borderRadius: 10,  // dilim köşeleri
+        spacing: 10,
+        borderRadius: 12,
       }]
     },
     options: {
-      responsive: true,
-      cutout: "35%",
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: { label: (c) => `${c.label}: %${c.raw}` }
-        }
-      }
+      responsive: false, // fixed for pixel-perfect 1440x900
+      cutout: "36%",
+      plugins: { legend: { display:false } }
     },
     plugins: [shadowPlugin]
   });
-
-  // Not: Yüzde yazılarını dilim içine yazdırmayı da ekleyebiliriz (bir sonraki adım).
 </script>
 
 </body>
