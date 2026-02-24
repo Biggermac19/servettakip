@@ -5,345 +5,139 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Servet Takip</title>
 
-  <!-- Baloo (Google Fonts) -->
+  <!-- Baloo -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
     :root{
-      /* Canva'ya daha yakın sıcak koyu arka plan */
-      --bgTop:#16181f;
-      --bgBot:#101217;
-
-      --text:#cfcfcf;
-      --muted:#bdbdbd;
-
-      --frame:rgba(255,255,255,.55);
-
-      --purple:#b79cff;
-      --cyan:#8ed0ff;
-      --gold:#f0d27c;
+      --bg:#14161c;
+      --text:#bfbfbf;
     }
 
     *{box-sizing:border-box}
+    html,body{height:100%}
     body{
       margin:0;
+      background: var(--bg);
       font-family:"Baloo 2", system-ui, sans-serif;
-      background:
-        radial-gradient(1100px 560px at 50% 0%, rgba(255,255,255,.06), transparent 60%),
-        linear-gradient(180deg,var(--bgTop),var(--bgBot));
-      color:var(--text);
+      overflow:hidden; /* cover scale ile taşan kısımları kırp */
     }
 
-    /* ===== Full-screen layout (boşlukları bitirir) ===== */
-    .screen{
-      min-height:100vh;
-      display:grid;
-      grid-template-rows: auto 1fr auto auto;
-      align-items:start;
+    /* Ekranı dolduran sahne (cover) */
+    .viewport{
+      width:100vw;
+      height:100vh;
+      position:relative;
+      overflow:hidden;
+      background: radial-gradient(1200px 600px at 50% 0%, rgba(255,255,255,.05), transparent 60%), var(--bg);
     }
 
-    .container{
-      width:min(1440px, 100vw);
-      margin:0 auto;
-      padding: clamp(18px, 3.8vw, 56px);
+    /* 1440x900 tasarım alanı */
+    .stage{
+      width:1440px;
+      height:900px;
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform: translate(-50%,-50%) scale(1);
+      transform-origin:center center;
     }
 
-    /* ===== Header ===== */
-    .header{
-      display:grid;
-      grid-template-columns: 260px 1fr 260px;
-      align-items:center;
-      padding-top: 6px;
-    }
+    /* Hepsi absolute yerleşecek */
+    .abs{position:absolute; display:block}
 
-    .left, .right{
+    /* Header parçaları */
+    .menu{ left:120px; top:125px; width:380px; }
+    .account{ right:120px; top:120px; width:379px; }
+
+    .brandWrap{
+      position:absolute;
+      left:50%;
+      top:40px;
+      transform:translateX(-50%);
       display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:12px;
-      color:var(--muted);
-      font-weight:800;
-      font-size: clamp(18px, 1.6vw, 26px);
-      opacity:.95;
-    }
-
-    .hamburger{
-      width:74px; height:58px;
-      display:flex; flex-direction:column; justify-content:center; gap:10px;
-      opacity:.85;
-    }
-    .hamburger span{
-      height:4px; border-radius:4px; background:#cfcfcf;
-      width:72px;
-    }
-    .hamburger span:nth-child(2){ width:58px; }
-
-    .center{
-      display:flex;
-      justify-content:center;
       align-items:center;
       gap:18px;
     }
-
-    /* Logo: en doğrusu tek parça asset */
-    .logoWrap{
-      width:84px; height:84px;
+    .brandWrap img{
+      width:90px;
+      height:90px;
       border-radius:10px;
-      background:#ffd400;
-      display:grid; place-items:center;
-      box-shadow: 0 12px 28px rgba(0,0,0,.35);
-      overflow:hidden;
+      box-shadow:0 14px 30px rgba(0,0,0,.35);
     }
-    .logoWrap img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-    /* Logo yoksa placeholder S */
-    .logoFallback{
-      font-weight:900;
-      font-size:58px;
-      color:#0b0b0b;
-      line-height:1;
-      position:relative;
-    }
-    .logoFallback::after{
-      content:"₺";
-      position:absolute;
-      right:-10px; top:10px;
-      font-size:18px;
-      transform:rotate(-18deg);
-      font-weight:900;
-    }
-
-    .brand{
-      font-size: clamp(30px, 2.8vw, 44px);
-      font-weight:900;
-      letter-spacing:.2px;
-      color:#bfbfbf;
-      text-shadow: 0 10px 22px rgba(0,0,0,.35);
-    }
-
-    .userIcon{
-      width:64px; height:64px;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-      opacity:.9;
-    }
-
-    /* ===== Main card ===== */
-    .main{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding-top: clamp(10px, 2.2vw, 22px);
-    }
-
-    .chartCard{
-      width: min(1120px, 100%);
-      height: clamp(320px, 40vh, 380px);
-      border: 3px solid var(--frame);
-      box-shadow: 0 18px 44px rgba(0,0,0,.55);
-      background: rgba(0,0,0,.08);
-      position:relative;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding: 22px;
-    }
-
-    .sideTools{
-      position:absolute;
-      right: 22px;
-      top: 22px;
-      bottom: 22px;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      gap:16px;
-      color:var(--muted);
+    .brandText{
+      font-size:44px;
       font-weight:800;
-      font-size: clamp(14px, 1.3vw, 18px);
-      text-align:right;
+      color:var(--text);
+      opacity:.95;
+      text-shadow:0 12px 24px rgba(0,0,0,.35);
+      letter-spacing:.2px;
     }
 
-    .tool{
-      display:flex;
-      align-items:center;
-      justify-content:flex-end;
-      gap:12px;
-    }
-    .tool svg{
-      width:46px; height:46px;
-      opacity:.9;
-      filter: drop-shadow(0 10px 16px rgba(0,0,0,.45));
-    }
+    /* Grafik kartı */
+    .frame{ left:200px; top:170px; width:1040px; } /* frame.png kırpılmış hali: 1040x480 */
+    .pie{ left:489px; top:235px; width:462px; }   /* pie.png kırpılmış hali */
+    .labels{ left:193px; top:255px; width:1054px; } /* labels_percents.png */
 
-    .pieWrap{
-      width: 560px;
-      height: 300px;
-      position:relative;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
+    /* Sağ üst/alt kontroller */
+    .chartChange{ left:1000px; top:190px; width:300px; }    /* kırpılmış görsel büyük; burada küçültüyoruz */
+    .chartSettings{ left:985px; top:440px; width:330px; }
 
-    .lbl{
-      position:absolute;
-      font-weight:900;
-      font-size: clamp(24px, 2.1vw, 34px);
-      color:#bfbfbf;
-      text-shadow: 0 12px 22px rgba(0,0,0,.35);
-    }
-    /* Canva'ya yakın konumlar */
-    .lbl.borsa{ left: 40px; top: 66px; }
-    .lbl.altin{ left: 62px; top: 200px; }
-    .lbl.gayrimenkul{ right: -10px; top: 126px; }
-
-    /* ===== Totals ===== */
+    /* Toplam yazıları */
     .totals{
+      position:absolute;
+      left:50%;
+      top:650px;
+      transform:translateX(-50%);
+      width:1440px;
       text-align:center;
-      padding: clamp(14px, 2.4vw, 24px) 0 0;
-      color:#c7c7c7;
-      text-shadow: 0 16px 30px rgba(0,0,0,.35);
+      color:var(--text);
+      text-shadow:0 16px 30px rgba(0,0,0,.35);
     }
     .totals .big{
-      font-size: clamp(34px, 3.3vw, 52px);
-      font-weight:900;
-      letter-spacing:.2px;
+      font-size:54px;
+      font-weight:800;
+      opacity:.95;
     }
     .totals .row{
-      margin-top: clamp(14px, 2.2vw, 24px);
+      margin-top:26px;
       display:flex;
       justify-content:center;
-      gap: clamp(28px, 6vw, 90px);
-      flex-wrap:wrap;
-      font-size: clamp(22px, 2.4vw, 40px);
-      font-weight:900;
+      gap:90px;
+      font-size:40px;
+      font-weight:800;
+      opacity:.95;
     }
 
-    /* ===== Add button ===== */
-    .add{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:14px;
-      padding: clamp(10px, 2.5vw, 24px) 0 clamp(18px, 3vw, 30px);
-    }
-
-    .addBtn{
-      width: 170px;
-      height: 170px;
-      border-radius:999px;
-      border:none;
-      cursor:pointer;
-
-      /* derinlik */
-      background: radial-gradient(circle at 30% 30%, #f2f2f2, #cfcfcf 55%, #aaaaaa);
-      box-shadow:
-        inset 0 12px 20px rgba(255,255,255,.35),
-        inset 0 -12px 20px rgba(0,0,0,.22),
-        0 20px 40px rgba(0,0,0,.55);
-      display:grid;
-      place-items:center;
-    }
-
-    .plus{
-      width: 96px;
-      height: 96px;
-      position:relative;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.25));
-    }
-    .plus::before,.plus::after{
-      content:"";
-      position:absolute;
-      left:50%; top:50%;
-      transform:translate(-50%,-50%);
-      background:#e7e2d8;
-      border-radius:10px;
-      box-shadow:
-        inset 0 6px 10px rgba(255,255,255,.35),
-        inset 0 -6px 10px rgba(0,0,0,.14);
-    }
-    .plus::before{ width:110px; height:18px; }
-    .plus::after{ width:18px; height:110px; }
-
-    .addLabel{
-      font-size: clamp(22px, 2.1vw, 34px);
-      font-weight:900;
-      color:#bfbfbf;
-      text-shadow: 0 16px 30px rgba(0,0,0,.35);
-    }
-
-    /* Mobile fallback */
-    @media (max-width: 980px){
-      .header{ grid-template-columns: 1fr 1fr; row-gap:16px; }
-      .left{ grid-column:1/2; }
-      .right{ grid-column:2/3; }
-      .center{ grid-column:1/3; order:-1; }
-      .lbl.gayrimenkul{ right: 0; }
-    }
+    /* Varlık ekle */
+    .add{ left:455px; top:720px; width:530px; } /* add.png kırpılmış hali: 531x629; sahnede uygun küçültüyoruz */
   </style>
 </head>
 
 <body>
-  <div class="screen">
-    <div class="container">
-      <div class="header">
-        <div class="left">
-          <div class="hamburger" aria-hidden="true">
-            <span></span><span></span><span></span>
-          </div>
-          <div>Menü</div>
-        </div>
+  <div class="viewport" id="viewport">
+    <div class="stage" id="stage">
 
-        <div class="center">
-          <div class="logoWrap" title="Servet Takip">
-            <!-- LOGO DOSYASI VARSA: assets/logo.png yükle, otomatik gelir -->
-            <img src="assets/logo.png" alt="" onerror="this.remove();document.getElementById('logoFallback').style.display='block';">
-            <div id="logoFallback" class="logoFallback" style="display:none;">S</div>
-          </div>
-          <div class="brand">Servet Takip</div>
-        </div>
+      <!-- Header -->
+      <img class="abs menu" src="assets/menu.png" alt="Menü">
+      <img class="abs account" src="assets/account.png" alt="Hesabım">
 
-        <div class="right">
-          <svg class="userIcon" viewBox="0 0 24 24" fill="#cfcfcf" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 12c2.76 0 5-2.46 5-5.5S14.76 1 12 1 7 3.46 7 6.5 9.24 12 12 12Zm0 2c-4.42 0-8 2.24-8 5v3h16v-3c0-2.76-3.58-5-8-5Z"/>
-          </svg>
-          <div>Hesabım</div>
-        </div>
+      <div class="brandWrap">
+        <img src="assets/logo.png" alt="Servet Takip">
+        <div class="brandText">Servet Takip</div>
       </div>
 
-      <div class="main">
-        <div class="chartCard">
-          <div class="sideTools">
-            <div class="tool">
-              <div>Grafik<br>Değiştir</div>
-              <svg viewBox="0 0 24 24" fill="#cfcfcf" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 19h16v2H2V3h2v16Zm3-2V9h3v8H7Zm5 0V5h3v12h-3Zm5 0v-6h3v6h-3Z"/>
-              </svg>
-            </div>
-            <div class="tool">
-              <div>Grafik<br>Ayarları</div>
-              <svg viewBox="0 0 24 24" fill="#cfcfcf" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.6 7.6 0 0 0-1.63-.94l-.36-2.54A.5.5 0 0 0 13.9 1h-3.8a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.12.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 7.48a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.83 14.52a.5.5 0 0 0-.12.64l1.92 3.32c.13.23.39.32.6.22l2.39-.96c.5.4 1.05.71 1.63.94l.36 2.54c.04.24.25.42.49.42h3.8c.24 0 .45-.18.49-.42l.36-2.54c.58-.23 1.12-.54 1.63-.94l2.39.96c.22.1.47.01.6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8a3.5 3.5 0 0 1 0 7.5Z"/>
-              </svg>
-            </div>
-          </div>
+      <!-- Chart frame -->
+      <img class="abs frame" src="assets/frame.png" alt="">
+      <img class="abs pie" src="assets/pie.png" alt="">
+      <img class="abs labels" src="assets/labels_percents.png" alt="">
 
-          <div class="pieWrap">
-            <div class="lbl borsa">Borsa</div>
-            <div class="lbl altin">Altın</div>
-            <div class="lbl gayrimenkul">Gayrimenkul</div>
-            <canvas id="pie" width="440" height="280"></canvas>
-          </div>
-        </div>
-      </div>
+      <img class="abs chartChange" src="assets/chart_change.png" alt="">
+      <img class="abs chartSettings" src="assets/chart_settings.png" alt="">
 
+      <!-- Totals -->
       <div class="totals">
         <div class="big">Servetim: 2.955.245,87₺</div>
         <div class="row">
@@ -352,51 +146,25 @@
         </div>
       </div>
 
-      <div class="add">
-        <button class="addBtn" onclick="alert('Varlık Ekle: sonraki adımda modal bağlayacağız')">
-          <div class="plus"></div>
-        </button>
-        <div class="addLabel">Varlık Ekle</div>
-      </div>
+      <!-- Add -->
+      <img class="abs add" src="assets/add.png" alt="Varlık Ekle">
+
     </div>
   </div>
 
   <script>
-    // 3D hissi için shadow plugin
-    const shadowPlugin = {
-      id:'shadow',
-      beforeDatasetsDraw(chart){
-        const {ctx} = chart;
-        ctx.save();
-        ctx.shadowColor = 'rgba(0,0,0,.55)';
-        ctx.shadowBlur = 18;
-        ctx.shadowOffsetX = 10;
-        ctx.shadowOffsetY = 14;
-      },
-      afterDatasetsDraw(chart){ chart.ctx.restore(); }
-    };
+    // 1440x900 tasarımı ekrana "cover" şekilde ölçekle (boşluk bırakmaz)
+    const BASE_W = 1440, BASE_H = 900;
+    const stage = document.getElementById("stage");
 
-    new Chart(document.getElementById("pie").getContext("2d"),{
-      type:"doughnut",
-      data:{
-        labels:["Borsa","Altın","Gayrimenkul"],
-        datasets:[{
-          data:[35,25,40],
-          backgroundColor:["#b79cff","#f0d27c","#8ed0ff"],
-          borderColor:"rgba(0,0,0,.45)",
-          borderWidth:2,
-          spacing:10,
-          borderRadius:12,
-          hoverOffset:8
-        }]
-      },
-      options:{
-        responsive:false,
-        cutout:"36%",
-        plugins:{legend:{display:false}}
-      },
-      plugins:[shadowPlugin]
-    });
+    function resize(){
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const scale = Math.max(vw / BASE_W, vh / BASE_H); // COVER
+      stage.style.transform = `translate(-50%,-50%) scale(${scale})`;
+    }
+    window.addEventListener("resize", resize);
+    resize();
   </script>
 </body>
 </html>
