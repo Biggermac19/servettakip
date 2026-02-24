@@ -10,67 +10,51 @@
       --w:1440px;
       --h:900px;
     }
-
-    html, body {
-      height: 100%;
-      margin: 0;
-      background: var(--bg);
-    }
-
-    /* Sayfayı ortala ama ASLA ölçekleme yapma */
+    html, body { height:100%; margin:0; background:var(--bg); }
     body{
       display:flex;
       align-items:center;
       justify-content:center;
       overflow:auto;
     }
-
-    /* 1440x900 "artboard" */
     .stage{
       position:relative;
-      width: var(--w);
-      height: var(--h);
-      background: var(--bg);
+      width:var(--w);
+      height:var(--h);
+      background:var(--bg);
       overflow:hidden;
     }
-
-    /* Her layer: 1:1 piksel, kesinlikle transform/scale yok */
     .layer{
       position:absolute;
       inset:0;
-      width: var(--w);
-      height: var(--h);
+      width:var(--w);
+      height:var(--h);
       display:block;
       pointer-events:none;
       image-rendering:auto;
       -webkit-user-drag:none;
       user-select:none;
     }
-
-    /* Tıklanabilir yapmak istersen (şimdilik kapalı)
-    .clickable{ pointer-events:auto; cursor:pointer; }
-    */
   </style>
 </head>
 
 <body>
   <div class="stage" aria-label="Servet Takip Ana Ekran">
-    <!-- Üstten alta doğru: önce arka/çerçeve, sonra ikonlar, sonra yazılar -->
-    <img class="layer" src="frame_big.png" alt="" style="z-index:10">
+    <img class="layer" src="assets/frame_big.png" alt="" style="z-index:10">
 
-    <img class="layer" src="pie_big.png" alt="" style="z-index:20">
-    <img class="layer" src="labels_text_big.png" alt="" style="z-index:30">
+    <img class="layer" src="assets/pie_big.png" alt="" style="z-index:20">
+    <img class="layer" src="assets/labels_text_big.png" alt="" style="z-index:30">
 
-    <img class="layer" src="chart_change_big.png" alt="" style="z-index:40">
-    <img class="layer" src="chart_settings_big.png" alt="" style="z-index:41">
+    <img class="layer" src="assets/chart_change_big.png" alt="" style="z-index:40">
+    <img class="layer" src="assets/chart_settings_big.png" alt="" style="z-index:41">
 
-    <img class="layer" src="totals_big.png" alt="" style="z-index:50">
-    <img class="layer" src="add_big.png" alt="" style="z-index:60">
+    <img class="layer" src="assets/totals_big.png" alt="" style="z-index:50">
+    <img class="layer" src="assets/add_big.png" alt="" style="z-index:60">
 
-    <img class="layer" src="menu_big.png" alt="" style="z-index:70">
-    <img class="layer" src="account_big.png" alt="" style="z-index:71">
+    <img class="layer" src="assets/menu_big.png" alt="" style="z-index:70">
+    <img class="layer" src="assets/account_big.png" alt="" style="z-index:71">
 
-    <img class="layer" src="header_logo_big.png" alt="Servet Takip" style="z-index:80">
+    <img class="layer" src="assets/header_logo_big.png" alt="Servet Takip" style="z-index:80">
   </div>
 </body>
 </html>
