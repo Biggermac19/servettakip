@@ -4,555 +4,96 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Servet Takip (MVP)</title>
-
-  <!-- Font (Baloo 2) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
-      --bg: #14161C;                 /* senin verdiğin */
-      --text: #B6B6B6;
-      --text-strong: #D0D0D0;
-      --shadow: rgba(0,0,0,.55);
-
-      /* Pie renkleri (yakın tonlar) */
-      --c-borsa: #C3A3FF;
-      --c-gayrimenkul: #9FD7FF;
-      --c-altin: #E6D08A;
-    }
-
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      font-family:"Baloo 2", system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      background:
-        radial-gradient(1100px 700px at 40% 10%, rgba(255,255,255,.06), transparent 60%),
-        radial-gradient(900px 650px at 70% 20%, rgba(255,255,255,.035), transparent 60%),
-        var(--bg);
-      overflow:hidden;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    /* Sahne */
-    .viewport{
-      width:100vw;
-      height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .stage-wrap{
-      position:relative;
-      width:1440px;
-      height:900px;
-      transform-origin: top left;
-      will-change: transform;
-    }
-    .stage{
-      position:absolute;
-      inset:0;
-    }
-
-    /* Asset layer */
-    .asset{
-      position:absolute;
-      inset:0;
-      width:1440px;
-      height:900px;
-      pointer-events:none;
-      user-select:none;
-      -webkit-user-drag:none;
-    }
-
-    /* Dinamik yazılar */
-    .t{
-      position:absolute;
-      color:var(--text);
-      text-shadow: 0 6px 10px var(--shadow);
-      letter-spacing: .2px;
-      white-space:nowrap;
-    }
-    .t strong{ color:var(--text-strong); }
-
-    /* Totals konumları (1440x900 referans) */
-    #totalLine{
-      left:50%;
-      top:548px;
-      transform:translateX(-50%);
-      font-size:48px;
-      font-weight:800;
-    }
-    #activeLine{
-      left:270px;
-      top:670px;
-      font-size:38px;
-      font-weight:800;
-    }
-    #passiveLine{
-      right:250px;
-      top:670px;
-      font-size:38px;
-      font-weight:800;
-      text-align:right;
-    }
-
-    /* Pie + label konumları */
-    .label{
-      font-size:42px;
-      font-weight:800;
-    }
-    .pct{
-      font-size:46px;
-      font-weight:900;
-      color:#111;               /* görseldeki gibi koyu yüzde */
-      text-shadow: 0 10px 18px rgba(0,0,0,.35);
-    }
-
-    /* Yaklaşık yerleşimler (tasarıma yakın) */
-    #lblBorsa   { left:560px; top:250px; }
-    #lblAltin   { left:500px; top:420px; }
-    #lblGayrim  { left:910px; top:310px; }
-
-    #pctBorsa   { left:690px; top:250px; }
-    #pctAltin   { left:650px; top:410px; }
-    #pctGayrim  { left:760px; top:325px; }
-
-    /* Pie container */
-    .pieWrap{
-      position:absolute;
-      left:610px;
-      top:190px;
-      width:330px;
-      height:330px;
-      display:grid;
-      place-items:center;
-      pointer-events:none;
-    }
-
-    /* SVG pie: 3D hissi için filtre */
-    svg{ overflow:visible; }
-
-    /* Tıklanabilir butonlar (assetler üstünde) */
-    .hit{
-      position:absolute;
-      cursor:pointer;
-      border-radius:24px;
-    }
-
-    /* Varlık Ekle butonu hitbox */
-    #hitAdd{
-      left:540px; top:690px;
-      width:360px; height:220px;
-    }
-    /* Menü / Hesabım / Grafik değiştir / ayarları hitbox */
-    #hitMenu{ left:70px; top:90px; width:240px; height:220px; border-radius:32px; }
-    #hitAccount{ right:70px; top:70px; width:240px; height:260px; border-radius:32px; }
-    #hitChartChange{ right:200px; top:180px; width:260px; height:120px; border-radius:20px; }
-    #hitChartSettings{ right:200px; top:400px; width:280px; height:140px; border-radius:20px; }
-
-    /* Panel */
-    .modal{
-      position:absolute;
-      inset:0;
-      background: rgba(0,0,0,.55);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-    }
-    .modal.open{ display:flex; }
-
-    .panel{
-      width:min(720px, 92vw);
-      background: rgba(25,28,36,.92);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 20px 60px rgba(0,0,0,.55);
-      border-radius: 18px;
-      padding: 18px 18px 16px;
-      color: #E6E6E6;
-      backdrop-filter: blur(10px);
-    }
-    .panel h2{
-      margin:0 0 12px 0;
-      font-size:26px;
-      letter-spacing:.2px;
-    }
-    .grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    label{
-      font-size:14px;
-      color: rgba(255,255,255,.75);
-    }
-    input, select{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(10,12,16,.65);
-      color:#fff;
-      outline:none;
-      font-family:inherit;
-      font-size:16px;
-    }
-    input:focus, select:focus{
-      border-color: rgba(255,255,255,.28);
-    }
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:flex-end;
-      margin-top:14px;
-    }
-    .btn{
-      padding:10px 14px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.08);
-      color:#fff;
-      font-weight:800;
-      cursor:pointer;
-    }
-    .btn.primary{
-      background: rgba(60, 220, 140, .18);
-      border-color: rgba(60, 220, 140, .35);
-    }
-
-    /* Küçük debug (istersen açarsın)
-    .dbg { outline: 1px dashed rgba(255,0,0,.35); }
-    */
-  </style>
+  <link rel="stylesheet" href="./style.css" />
 </head>
-
 <body>
-  <div class="viewport">
-    <div class="stage-wrap" id="stageWrap">
-      <div class="stage">
+  <!-- Sahne: her şeyin referansı -->
+  <div id="stageWrap">
+    <div id="stage" aria-label="Servet Takip Sahnesi">
 
-        <!-- Arka planın üstüne asset katmanları (hepsi 1440x900 sahne) -->
-        <img class="asset" src="assets/header_logo_big.png" alt="" />
-        <img class="asset" src="assets/menu_big.png" alt="" />
-        <img class="asset" src="assets/account_big.png" alt="" />
-        <img class="asset" src="assets/frame_big.png" alt="" />
-        <img class="asset" src="assets/chart_change_big.png" alt="" />
-        <img class="asset" src="assets/chart_settings_big.png" alt="" />
-        <img class="asset" src="assets/add_big.png" alt="" />
+      <!-- ARKA PLAN (istersen kapatabilirsin; senin arka plan PNG'n varsa onu da layer yap) -->
+      <div class="bg"></div>
 
-        <!-- Dinamik Pie (PNG yerine SVG: yüzdeler değişsin diye) -->
-        <div class="pieWrap" aria-hidden="true">
-          <svg width="320" height="320" viewBox="0 0 320 320">
-            <defs>
-              <!-- Yumuşak dış gölge -->
-              <filter id="ds" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="rgba(0,0,0,.55)"/>
-              </filter>
+      <!-- ÜST LOGO -->
+      <img class="layer" id="hdrLogo" src="./assets/Servet%20Takip%20(22).png" alt="Servet Takip Logo" />
 
-              <!-- Hafif 3D parıltı -->
-              <radialGradient id="shine" cx="30%" cy="20%" r="75%">
-                <stop offset="0%" stop-color="rgba(255,255,255,.55)"/>
-                <stop offset="55%" stop-color="rgba(255,255,255,.12)"/>
-                <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
-              </radialGradient>
+      <!-- SOL MENU -->
+      <img class="layer" id="leftMenu" src="./assets/Servet%20Takip%20(20).png" alt="Menü" />
 
-              <clipPath id="clipCircle">
-                <circle cx="160" cy="160" r="116"></circle>
-              </clipPath>
-            </defs>
+      <!-- SAĞ HESABIM -->
+      <img class="layer" id="rightAccount" src="./assets/Servet%20Takip%20(21).png" alt="Hesabım" />
 
-            <!-- Segmentler: path'leri JS üretecek -->
-            <g filter="url(#ds)" id="pieSegs"></g>
+      <!-- ORTA KUTU ÇERÇEVE -->
+      <img class="layer" id="frame" src="./assets/Servet%20Takip%20(15).png" alt="Çerçeve" />
 
-            <!-- Üstten parıltı -->
-            <g clip-path="url(#clipCircle)">
-              <circle cx="140" cy="140" r="150" fill="url(#shine)"></circle>
-            </g>
+      <!-- GRAFIK BUTONLAR -->
+      <button class="hit" id="btnChartChange" type="button" aria-label="Grafik Değiştir">
+        <img src="./assets/Servet%20Takip%20(17).png" alt="">
+      </button>
 
-            <!-- İç boşluk efekti (çok küçük) -->
-            <circle cx="160" cy="160" r="6" fill="rgba(0,0,0,.25)"></circle>
-          </svg>
-        </div>
+      <button class="hit" id="btnChartSettings" type="button" aria-label="Grafik Ayarları">
+        <img src="./assets/Servet%20Takip%20(16).png" alt="">
+      </button>
 
-        <!-- Dinamik label + yüzdeler -->
-        <div class="t label" id="lblBorsa">Borsa</div>
-        <div class="t label" id="lblAltin">Altın</div>
-        <div class="t label" id="lblGayrim">Gayrimenkul</div>
+      <!-- ORTA: LABEL'lar (Borsa/Altın/Gayrimenkul) -->
+      <img class="layer" id="labels" src="./assets/Servet%20Takip%20(18).png" alt="Etiketler" />
 
-        <div class="t pct" id="pctBorsa">%35</div>
-        <div class="t pct" id="pctAltin">%25</div>
-        <div class="t pct" id="pctGayrim">%40</div>
+      <!-- ORTA: PIE -->
+      <img class="layer" id="pie" src="./assets/Servet%20Takip%20(19).png" alt="Dağılım Grafiği" />
 
-        <!-- Dinamik toplamlar -->
-        <div class="t" id="totalLine">Servetim: <strong id="totalVal">0 ₺</strong></div>
-        <div class="t" id="activeLine">Aktif Servetim: <strong id="activeVal">0 ₺</strong></div>
-        <div class="t" id="passiveLine">Pasif Servetim: <strong id="passiveVal">0 ₺</strong></div>
+      <!-- ORTA: YÜZDELER (DİNAMİK TEXT) -->
+      <div class="txt pct" id="pctBorsa">%35</div>
+      <div class="txt pct" id="pctAltin">%25</div>
+      <div class="txt pct" id="pctGayri">%40</div>
 
-        <!-- Hitboxes -->
-        <div class="hit" id="hitAdd" title="Varlık Ekle"></div>
-        <div class="hit" id="hitMenu" title="Menü"></div>
-        <div class="hit" id="hitAccount" title="Hesabım"></div>
-        <div class="hit" id="hitChartChange" title="Grafik Değiştir"></div>
-        <div class="hit" id="hitChartSettings" title="Grafik Ayarları"></div>
+      <!-- ORTA: TOPLAM / AKTIF / PASIF (DİNAMİK TEXT) -->
+      <div class="txt big" id="totalWealth">Servetim: 2.955.245,87₺</div>
+      <div class="txt mid left"  id="activeWealth">Aktif Servetim: 2.000.000₺</div>
+      <div class="txt mid right" id="passiveWealth">Pasif Servetim: 955.245,87₺</div>
 
-        <!-- Modal / Panel -->
-        <div class="modal" id="modal">
-          <div class="panel">
-            <h2>Varlık Dağılımı (Dinamik)</h2>
+      <!-- ALT: VARLIK EKLE -->
+      <button class="hit" id="btnAddAsset" type="button" aria-label="Varlık Ekle">
+        <img src="./assets/Servet%20Takip%20(13).png" alt="">
+      </button>
 
-            <div class="grid">
-              <div class="field">
-                <label for="inBorsa">Borsa (₺)</label>
-                <input id="inBorsa" type="number" min="0" step="100" />
-              </div>
+      <!-- ORTA SATIR (Servetim + alt satır) ayrı layer kullanmak istersen: -->
+      <img class="layer" id="bottomTextLayer" src="./assets/Servet%20Takip%20(14).png" alt="" />
 
-              <div class="field">
-                <label for="inBorsaType">Borsa türü</label>
-                <select id="inBorsaType">
-                  <option value="active">Aktif</option>
-                  <option value="passive">Pasif</option>
-                </select>
-              </div>
+      <!-- AYAR PANELİ (basit) -->
+      <div id="panel" role="dialog" aria-modal="true" aria-label="Değerleri Düzenle">
+        <div class="panelCard">
+          <div class="panelTitle">Değerleri Gir (TL)</div>
 
-              <div class="field">
-                <label for="inAltin">Altın (₺)</label>
-                <input id="inAltin" type="number" min="0" step="100" />
-              </div>
+          <label>Gayrimenkul (TL)
+            <input id="inGayri" type="number" inputmode="decimal" step="0.01" placeholder="Örn: 1500000" />
+          </label>
 
-              <div class="field">
-                <label for="inAltinType">Altın türü</label>
-                <select id="inAltinType">
-                  <option value="active">Aktif</option>
-                  <option value="passive">Pasif</option>
-                </select>
-              </div>
+          <label>Borsa (TL)
+            <input id="inBorsa" type="number" inputmode="decimal" step="0.01" placeholder="Örn: 1000000" />
+          </label>
 
-              <div class="field">
-                <label for="inGayrim">Gayrimenkul (₺)</label>
-                <input id="inGayrim" type="number" min="0" step="1000" />
-              </div>
+          <label>Altın (TL)
+            <input id="inAltin" type="number" inputmode="decimal" step="0.01" placeholder="Örn: 500000" />
+          </label>
 
-              <div class="field">
-                <label for="inGayrimType">Gayrimenkul türü</label>
-                <select id="inGayrimType">
-                  <option value="active">Aktif</option>
-                  <option value="passive">Pasif</option>
-                </select>
-              </div>
+          <label>Aktif / Pasif ayrımı (opsiyonel)
+            <div class="row2">
+              <input id="inActive" type="number" inputmode="decimal" step="0.01" placeholder="Aktif TL" />
+              <input id="inPassive" type="number" inputmode="decimal" step="0.01" placeholder="Pasif TL" />
             </div>
+            <small>Boş bırakırsan toplam = (Borsa+Altın+Gayrimenkul) üzerinden hesaplar.</small>
+          </label>
 
-            <div class="row">
-              <button class="btn" id="btnClose">Kapat</button>
-              <button class="btn primary" id="btnSave">Kaydet</button>
-            </div>
-
-            <div style="margin-top:10px;color:rgba(255,255,255,.65);font-size:13px;">
-              Not: Bu MVP’de yüzdeler ve toplamlar otomatik hesaplanır. Sonra bunu “varlık listesi” + “tarihsel kayıt” kısmına bağlarız.
-            </div>
+          <div class="panelBtns">
+            <button id="btnApply" type="button">Uygula</button>
+            <button id="btnClose" type="button" class="ghost">Kapat</button>
           </div>
         </div>
-
       </div>
+
     </div>
   </div>
 
-<script>
-  // --- Sahne ölçekleme (1440x900 -> ekrana sığdır) ---
-  const stageWrap = document.getElementById("stageWrap");
-  function fitStage(){
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    const scale = Math.min(w/1440, h/900);
-    stageWrap.style.transform = `scale(${scale})`;
-  }
-  window.addEventListener("resize", fitStage);
-  fitStage();
-
-  // --- Basit state (ileride localStorage / backend) ---
-  const state = {
-    borsa: 1000000,
-    altin: 700000,
-    gayrimenkul: 1255245.87,
-    types: {
-      borsa: "active",
-      altin: "active",
-      gayrimenkul: "passive"
-    }
-  };
-
-  // --- TR format ---
-  const fmtTRY = (n) => {
-    const v = Number(n || 0);
-    return v.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "₺";
-  };
-
-  // --- Yüzde ---
-  const pct = (part, total) => {
-    if(total <= 0) return 0;
-    return Math.round((part / total) * 100);
-  };
-
-  // --- SVG pie path helpers ---
-  function polarToCartesian(cx, cy, r, angleDeg){
-    const a = (angleDeg - 90) * Math.PI / 180.0;
-    return { x: cx + (r * Math.cos(a)), y: cy + (r * Math.sin(a)) };
-  }
-  function arcPath(cx, cy, r, startAngle, endAngle){
-    const start = polarToCartesian(cx, cy, r, endAngle);
-    const end   = polarToCartesian(cx, cy, r, startAngle);
-    const largeArc = endAngle - startAngle <= 180 ? "0" : "1";
-    return [
-      `M ${cx} ${cy}`,
-      `L ${start.x} ${start.y}`,
-      `A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y}`,
-      "Z"
-    ].join(" ");
-  }
-
-  function render(){
-    const total = state.borsa + state.altin + state.gayrimenkul;
-
-    // totals
-    document.getElementById("totalVal").textContent = fmtTRY(total);
-
-    // aktif/pasif
-    const active = (state.types.borsa === "active" ? state.borsa : 0)
-                 + (state.types.altin === "active" ? state.altin : 0)
-                 + (state.types.gayrimenkul === "active" ? state.gayrimenkul : 0);
-
-    const passive = total - active;
-
-    document.getElementById("activeVal").textContent = fmtTRY(active);
-    document.getElementById("passiveVal").textContent = fmtTRY(passive);
-
-    // pct values
-    const pB = pct(state.borsa, total);
-    const pA = pct(state.altin, total);
-    const pG = 100 - pB - pA; // yuvarlamada taşarsa diye sonuncuyu residual yapıyoruz
-
-    document.getElementById("pctBorsa").textContent  = `%${pB}`;
-    document.getElementById("pctAltin").textContent  = `%${pA}`;
-    document.getElementById("pctGayrim").textContent = `%${pG}`;
-
-    // pie segments (order: borsa, gayrimenkul, altin) -> görsele yakın dağılım
-    const segs = [
-      { key:"borsa", val: state.borsa, color: getComputedStyle(document.documentElement).getPropertyValue("--c-borsa").trim() },
-      { key:"gayrim", val: state.gayrimenkul, color: getComputedStyle(document.documentElement).getPropertyValue("--c-gayrimenkul").trim() },
-      { key:"altin", val: state.altin, color: getComputedStyle(document.documentElement).getPropertyValue("--c-altin").trim() },
-    ];
-
-    const g = document.getElementById("pieSegs");
-    g.innerHTML = "";
-
-    let angle = 0;
-    const cx=160, cy=160, r=116;
-
-    // hafif “ayrık” görünüm için her seg'e küçük offset
-    const offsets = {
-      borsa: {dx:-6, dy:-4},
-      gayrim: {dx: 8, dy: 2},
-      altin: {dx:-4, dy: 8}
-    };
-
-    segs.forEach((s)=>{
-      const portion = total > 0 ? (s.val / total) : 0;
-      const sweep = portion * 360;
-
-      const start = angle;
-      const end   = angle + sweep;
-
-      // segment path
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", arcPath(cx, cy, r, start, end));
-      path.setAttribute("fill", s.color);
-
-      // 3D hissi: üst ışık + alt gölge için basit overlay
-      path.setAttribute("opacity", "0.98");
-
-      // offset
-      const {dx,dy} = offsets[s.key] || {dx:0,dy:0};
-      path.setAttribute("transform", `translate(${dx},${dy})`);
-
-      // küçük iç gölge hissi
-      path.style.filter = "drop-shadow(0px 10px 8px rgba(0,0,0,.35))";
-
-      g.appendChild(path);
-
-      angle += sweep;
-    });
-  }
-
-  // --- Modal ---
-  const modal = document.getElementById("modal");
-  const openModal = ()=> modal.classList.add("open");
-  const closeModal = ()=> modal.classList.remove("open");
-
-  document.getElementById("hitAdd").addEventListener("click", openModal);
-  document.getElementById("btnClose").addEventListener("click", closeModal);
-  modal.addEventListener("click", (e)=>{ if(e.target === modal) closeModal(); });
-
-  // diğer butonlar şimdilik bilgi
-  document.getElementById("hitMenu").addEventListener("click", ()=>alert("Menü: sonra panel yapacağız."));
-  document.getElementById("hitAccount").addEventListener("click", ()=>alert("Hesabım: sonra giriş/abonelik ekleyeceğiz."));
-  document.getElementById("hitChartChange").addEventListener("click", ()=>alert("Grafik Değiştir: sonra pasta/çizgi/bar seçenekleri."));
-  document.getElementById("hitChartSettings").addEventListener("click", ()=>alert("Grafik Ayarları: renk, kategori, görünürlük."));
-
-  // inputs
-  const inBorsa = document.getElementById("inBorsa");
-  const inAltin = document.getElementById("inAltin");
-  const inGayrim = document.getElementById("inGayrim");
-  const inBorsaType = document.getElementById("inBorsaType");
-  const inAltinType = document.getElementById("inAltinType");
-  const inGayrimType = document.getElementById("inGayrimType");
-
-  function syncForm(){
-    inBorsa.value = Math.round(state.borsa);
-    inAltin.value = Math.round(state.altin);
-    inGayrim.value = Math.round(state.gayrimenkul);
-    inBorsaType.value = state.types.borsa;
-    inAltinType.value = state.types.altin;
-    inGayrimType.value = state.types.gayrimenkul;
-  }
-
-  document.getElementById("btnSave").addEventListener("click", ()=>{
-    state.borsa = Math.max(0, Number(inBorsa.value || 0));
-    state.altin = Math.max(0, Number(inAltin.value || 0));
-    state.gayrimenkul = Math.max(0, Number(inGayrim.value || 0));
-    state.types.borsa = inBorsaType.value;
-    state.types.altin = inAltinType.value;
-    state.types.gayrimenkul = inGayrimType.value;
-
-    // localStorage (kalıcı)
-    localStorage.setItem("st_state_v1", JSON.stringify(state));
-
-    render();
-    closeModal();
-  });
-
-  // init from storage
-  try{
-    const saved = localStorage.getItem("st_state_v1");
-    if(saved){
-      const parsed = JSON.parse(saved);
-      if(parsed && typeof parsed === "object"){
-        Object.assign(state, parsed);
-        state.types = parsed.types || state.types;
-      }
-    }
-  }catch(_){}
-
-  syncForm();
-  render();
-</script>
+  <script src="./app.js"></script>
 </body>
 </html>
