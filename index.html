@@ -1,60 +1,53 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=1440, initial-scale=1, maximum-scale=1" />
-  <title>Servet Takip</title>
-  <style>
-    :root{
-      --bg:#14161c;
-      --w:1440px;
-      --h:900px;
-    }
-    html, body { height:100%; margin:0; background:var(--bg); }
-    body{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:auto;
-    }
-    .stage{
-      position:relative;
-      width:var(--w);
-      height:var(--h);
-      background:var(--bg);
-      overflow:hidden;
-    }
-    .layer{
-      position:absolute;
-      inset:0;
-      width:var(--w);
-      height:var(--h);
-      display:block;
-      pointer-events:none;
-      image-rendering:auto;
-      -webkit-user-drag:none;
-      user-select:none;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Servet Takip</title>
+
+<style>
+body {
+    margin:0;
+    background:#000;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+#app {
+    position:relative;
+    width:1920px;
+    height:1080px;
+    overflow:hidden;
+}
+
+/* Hepsi orijinal boyutta */
+#app img {
+    position:absolute;
+    width:1920px;
+    height:1080px;
+    image-rendering:auto;
+}
+</style>
 </head>
 
 <body>
-  <div class="stage" aria-label="Servet Takip Ana Ekran">
-    <img class="layer" src="assets/frame_big.png" alt="" style="z-index:10">
 
-    <img class="layer" src="assets/pie_big.png" alt="" style="z-index:20">
-    <img class="layer" src="assets/labels_text_big.png" alt="" style="z-index:30">
+<div id="app">
 
-    <img class="layer" src="assets/chart_change_big.png" alt="" style="z-index:40">
-    <img class="layer" src="assets/chart_settings_big.png" alt="" style="z-index:41">
+<img src="assets/background.png">
+<img src="assets/frame.png">
+<img src="assets/pie.png">
+<img src="assets/menu.png">
+<img src="assets/account.png">
+<img src="assets/settings.png">
+<img src="assets/change_graph.png">
+<img src="assets/labels.png">
+<img src="assets/totals.png">
+<img src="assets/add_button.png">
+<img src="assets/logo.png">
 
-    <img class="layer" src="assets/totals_big.png" alt="" style="z-index:50">
-    <img class="layer" src="assets/add_big.png" alt="" style="z-index:60">
+</div>
 
-    <img class="layer" src="assets/menu_big.png" alt="" style="z-index:70">
-    <img class="layer" src="assets/account_big.png" alt="" style="z-index:71">
-
-    <img class="layer" src="assets/header_logo_big.png" alt="Servet Takip" style="z-index:80">
-  </div>
 </body>
 </html>
